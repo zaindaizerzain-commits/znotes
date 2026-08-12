@@ -1,0 +1,1888 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F7D957">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="znotes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>znotes</title>
+<style>
+:root{
+  --bg:#0f1012;--panel:#17191d;--panel2:#202329;--text:#f4f4f2;
+  --muted:#a9adb6;--accent:#F7D957;--danger:#ff6b6b;--line:rgba(255,255,255,.10)
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;width:100%;min-height:100%;background:var(--bg);color:var(--text);overflow-x:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+button,input,textarea,select{font:inherit}button{border:0}
+.app{min-height:100svh;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+header{
+  position:sticky;top:0;z-index:10;
+  background:rgba(15,16,18,.97);backdrop-filter:blur(18px);
+  padding:calc(6px + env(safe-area-inset-top)) 14px 8px;
+  border-bottom:1px solid var(--line)
+}
+.top{height:43px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:7px}
+.brand img{width:36px;height:36px;border-radius:10px;object-fit:cover}
+.brand h1{margin:0;font-size:23px;line-height:1;font-weight:750;letter-spacing:-.6px}
+.iconbtn{width:36px;height:36px;display:grid;place-items:center;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:11px}
+.topActions{display:flex;gap:7px}
+.search{
+  height:45px;margin-top:6px;display:flex;align-items:center;gap:7px;
+  background:var(--panel);border:1px solid var(--line);padding:0 12px;border-radius:13px
+}
+.search span{font-size:21px;line-height:1;transform:rotate(-20deg)}
+.search input{background:none;border:0;outline:0;color:var(--text);width:100%;font-size:15px;text-align:start}
+.tabs{
+  display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding:8px 14px 0;
+  white-space:nowrap;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;-ms-overflow-style:none;
+  overscroll-behavior-x:contain;touch-action:pan-x
+}
+.tabs::-webkit-scrollbar{display:none}
+html[dir="rtl"] .tabs{direction:rtl}
+html[dir="ltr"] .tabs{direction:ltr}
+.tabs button{
+  flex:0 0 auto;min-width:auto;height:42px;padding:0 14px;border-radius:22px;
+  background:var(--panel);color:#c7c9ce;border:1px solid var(--line);
+  font-size:13px;white-space:nowrap;transition:background .2s ease,color .2s ease,transform .15s ease
+}
+.tabs button:active{transform:scale(.93)}
+.tabs button.active{background:var(--accent);color:#151515;border-color:transparent;font-weight:800;transform:scale(1.05)}
+main{padding:9px 14px calc(84px + env(safe-area-inset-bottom))}
+#content{transition:opacity .2s ease}
+#content.fade{opacity:0}
+.sectiontitle{display:flex;align-items:center;justify-content:space-between;margin:1px 0}
+.sectiontitle h2{font-size:19px;margin:0;font-weight:800}
+.sectiontitle span{font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}
+.grid.list{display:flex;flex-direction:column}
+.card{position:relative;border-radius:14px;padding:12px;min-height:115px;cursor:pointer;overflow:hidden}
+.card .pin{position:absolute;top:8px;left:8px;font-size:12px}
+.card h3{margin:0 0 5px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card p{margin:0;opacity:.82;line-height:1.4;font-size:12px;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.meta{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-top:7px;font-size:9px;opacity:.75}
+.tag{padding:3px 6px;border-radius:999px;background:rgba(255,255,255,.13)}
+.taskrow{display:flex;gap:9px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line)}
+.taskrow input{width:19px;height:19px;accent-color:var(--accent)}
+.taskrow.done .tasktext{text-decoration:line-through;opacity:.45}
+.empty{text-align:center;padding:62px 15px 20px;color:var(--muted);grid-column:1/-1;min-height:45svh;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.empty .emoji{font-size:44px;margin-bottom:7px}
+.fab{
+  position:fixed;inset-inline-end:16px;
+  bottom:calc(20px + env(safe-area-inset-bottom));
+  width:55px;height:55px;border-radius:50%;
+  background:var(--accent);color:#111;box-shadow:0 8px 24px rgba(0,0,0,.38);
+  z-index:30;font-size:29px;font-weight:300;display:grid;place-items:center;
+  transition:transform .15s ease,box-shadow .15s ease
+}
+.fab:active{transform:scale(.88);box-shadow:0 4px 12px rgba(0,0,0,.3)}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:none;align-items:flex-end}
+.overlay.open{display:flex}
+.sheet{
+  width:100%;max-height:90svh;overflow:auto;background:var(--panel);
+  border-radius:21px 21px 0 0;padding:9px 15px calc(18px + env(safe-area-inset-bottom))
+}
+.handle{width:40px;height:4px;border-radius:99px;background:#777;margin:0 auto 11px;opacity:.45}
+.sheethead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sheethead h2{margin:0;font-size:18px}.actions{display:flex;gap:7px}
+.field{margin-top:11px}.field label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}
+.field input,.field textarea,.field select{
+  width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:11px;padding:10px;outline:0
+}
+.field textarea{min-height:145px;resize:vertical;line-height:1.55}
+.row{display:flex;gap:7px}.row>*{flex:1}.colors{display:flex;gap:8px;flex-wrap:wrap}
+.color{width:28px;height:28px;border-radius:50%;border:2px solid transparent}
+.color.sel{border-color:#fff;box-shadow:0 0 0 2px #222}
+.checkline{display:flex;align-items:center;gap:8px;margin-top:9px}
+.checkline input{width:18px;height:18px;accent-color:var(--accent)}
+.primary{width:100%;margin-top:14px;padding:11px;border-radius:11px;background:var(--accent);color:#111;font-weight:800}
+.danger{color:var(--danger)!important}
+.settingsList{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+.settingbtn{padding:11px;text-align:right;display:flex;justify-content:space-between;align-items:center;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px}
+.toast{
+  position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom));
+  transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
+  background:#fff;color:#111;padding:8px 13px;border-radius:999px;z-index:100;transition:.2s;font-size:12px
+}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.lock{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;align-items:center;justify-content:center;padding:25px}
+.lock.open{display:flex}.lockbox{width:min(360px,100%);text-align:center}
+.lockbox img{width:72px;height:72px;border-radius:18px}.lockbox h2{margin:12px 0 5px}
+.pininput{text-align:center;font-size:23px;letter-spacing:8px}
+.light{--bg:#f4f4f1;--panel:#fff;--panel2:#f0f0ed;--text:#171717;--muted:#737373;--line:rgba(0,0,0,.10)}
+@media(min-width:700px){
+  main,.tabs,header{max-width:1000px;margin-left:auto;margin-right:auto}
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .fab{inset-inline-end:28px}
+}
+
+/* 🍳 Cooking / recipes */
+.recipeGrid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
+.recipeCard{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:13px;
+  cursor:pointer;position:relative
+}
+.recipeTop{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.recipeTitle{font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recipeActions{display:flex;gap:6px;flex:0 0 auto}
+.miniBtn{
+  width:34px;height:34px;border-radius:10px;background:var(--panel2);color:var(--text);
+  border:1px solid var(--line);display:grid;place-items:center;cursor:pointer
+}
+.ingredientPreview{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ingredientChip{
+  background:rgba(247,217,87,.12);border:1px solid rgba(247,217,87,.22);
+  color:var(--text);padding:5px 8px;border-radius:999px;font-size:11px
+}
+.recipeCount{color:var(--muted);font-size:11px;margin-top:8px}
+.recipeEmpty{padding:60px 15px;text-align:center;color:var(--muted);min-height:45svh;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.recipeEmpty .emoji{font-size:45px;margin-bottom:8px}
+.ingredientList{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.ingredientRow{
+  display:grid;grid-template-columns:minmax(0,1fr) 72px 76px 38px;
+  gap:6px;align-items:center
+}
+.ingredientRow input,.ingredientRow select{
+  min-width:0;width:100%;background:var(--panel2);color:var(--text);
+  border:1px solid var(--line);border-radius:10px;padding:9px;outline:none
+}
+.qtyInput{text-align:center;direction:ltr}
+.removeIng{
+  width:38px;height:38px;border-radius:10px;background:rgba(255,107,107,.12);
+  color:var(--danger);border:1px solid rgba(255,107,107,.18);cursor:pointer
+}
+.addIngredient{
+  width:100%;margin-top:9px;padding:10px;border-radius:11px;
+  background:var(--panel2);color:var(--text);border:1px dashed var(--line);cursor:pointer
+}
+.shopTitle{font-size:19px;font-weight:800;margin:0}
+.shopSubtitle{font-size:12px;color:var(--muted);margin-top:3px}
+.shopList{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.shopItem{
+  display:flex;align-items:center;gap:10px;padding:11px;border-radius:12px;
+  background:var(--panel2);border:1px solid var(--line)
+}
+.shopItem input{width:19px;height:19px;accent-color:var(--accent)}
+.shopItem.done .shopName{text-decoration:line-through;opacity:.45}
+.recipeSheet .primary{margin-top:13px}
+@media(max-width:380px){
+  .ingredientRow{grid-template-columns:minmax(0,1fr) 60px 68px 36px}
+  .ingredientRow input,.ingredientRow select{padding:8px;font-size:13px}
+}
+
+.reminderGrid{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.reminderCard{display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:var(--panel);border:1px solid var(--line)}
+.reminderCard input{width:20px;height:20px;accent-color:var(--accent)}
+.reminderText{flex:1;min-width:0}.reminderName{font-size:14px;font-weight:700}.reminderTime{font-size:11px;color:var(--muted);margin-top:3px}
+.reminderCard.done .reminderName{text-decoration:line-through;opacity:.45}
+.reminderDelete{width:34px;height:34px;border-radius:10px;background:rgba(255,107,107,.10);color:var(--danger);cursor:pointer}
+.reminderEmpty{text-align:center;color:var(--muted);padding:65px 15px;min-height:45svh;display:flex;flex-direction:column;justify-content:center;align-items:center}.reminderEmpty .emoji{font-size:43px;margin-bottom:7px}
+.reminderSheet textarea{min-height:90px}
+
+/* V9 dashboard, shopping, folders, themes */
+.dashboard{display:flex;flex-direction:column;gap:10px}
+.welcome{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:15px}
+.welcome h2{margin:0;font-size:20px}.welcome p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat b{font-size:22px}.stat span{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.quickGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.quick{padding:12px;border-radius:14px;background:var(--panel2);color:var(--text);border:1px solid var(--line);text-align:right}
+.quick b{display:block}.quick small{color:var(--muted)}
+.shoppingGrid,.folderGrid{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.folderCard,.shoppingListCard{padding:13px;border-radius:15px;background:var(--panel);border:1px solid var(--line)}
+.folderHead{display:flex;justify-content:space-between;align-items:center}
+.folderName{font-weight:800}.folderCount{font-size:11px;color:var(--muted)}
+.shoppingAdd{display:flex;gap:7px;margin-top:9px}.shoppingAdd input{flex:1}
+.shoppingAdd button{width:45px;border-radius:10px;background:var(--accent);color:#111;font-weight:900}
+.shoppingItem{display:flex;align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid var(--line)}
+.shoppingItem:last-child{border-bottom:0}.shoppingItem input{width:19px;height:19px;accent-color:var(--accent)}
+.shoppingItem.done span{text-decoration:line-through;opacity:.45}
+.themeRow{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.themeBtn{padding:9px 12px;border-radius:10px;background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+.themeBtn.active{background:var(--accent);color:#111;font-weight:800}
+.modalSmall{max-height:75svh}
+
+/* ===== MONEY SECTION ===== */
+.moneyDashboard{display:flex;flex-direction:column;gap:12px}
+.moneyBalanceCard{
+  background:linear-gradient(135deg,#1a1d23,#252932);
+  border:1px solid var(--line);border-radius:18px;padding:22px 18px;text-align:center;
+  position:relative;overflow:hidden
+}
+.moneyBalanceCard::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 0%,rgba(247,217,87,.10),transparent 65%);
+  pointer-events:none
+}
+.moneyBalanceLabel{font-size:13px;color:var(--muted);margin-bottom:6px;position:relative}
+.moneyBalanceAmount{font-size:38px;font-weight:800;letter-spacing:-1.5px;position:relative;transition:color .3s ease}
+.moneyBalanceAmount.positive{color:var(--accent)}
+.moneyBalanceAmount.negative{color:var(--danger)}
+.moneyStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.moneyStat{
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:13px 6px;text-align:center
+}
+.moneyStat .statIcon{font-size:17px;margin-bottom:3px}
+.moneyStat .statValue{font-size:15px;font-weight:800}
+.moneyStat .statLabel{font-size:9px;color:var(--muted);margin-top:2px}
+.moneyStat.income .statValue{color:#58c982}
+.moneyStat.expense .statValue{color:var(--danger)}
+.moneyQuickActions{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.moneyAction{
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:15px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;
+  transition:transform .15s ease,background .2s ease;text-align:start
+}
+.moneyAction:active{transform:scale(.95)}
+.moneyAction .actionIcon{font-size:22px;flex:0 0 auto}
+.moneyAction .actionLabel{font-size:13px;font-weight:700}
+.moneySearchBar{
+  height:42px;display:flex;align-items:center;gap:7px;
+  background:var(--panel);border:1px solid var(--line);padding:0 12px;border-radius:13px;
+  margin-bottom:10px
+}
+.moneySearchBar span{font-size:18px;opacity:.6}
+.moneySearchBar input{background:none;border:0;outline:0;color:var(--text);width:100%;font-size:14px;text-align:start}
+.moneyFilters{
+  display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;
+  white-space:nowrap;padding:0 0 10px;
+  scrollbar-width:none;-ms-overflow-style:none;
+  -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x
+}
+.moneyFilters::-webkit-scrollbar{display:none}
+.moneyFilters button{
+  flex:0 0 auto;padding:7px 14px;border-radius:999px;
+  background:var(--panel);color:var(--muted);border:1px solid var(--line);
+  font-size:12px;white-space:nowrap;transition:all .2s ease
+}
+.moneyFilters button.active{background:var(--accent);color:#111;font-weight:700;border-color:transparent}
+.moneyTimeFilters{
+  display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;
+  white-space:nowrap;padding:0 0 8px;
+  scrollbar-width:none;-ms-overflow-style:none;
+  -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x
+}
+.moneyTimeFilters::-webkit-scrollbar{display:none}
+.moneyTimeFilters button{
+  flex:0 0 auto;padding:5px 12px;border-radius:999px;
+  background:var(--panel2);color:var(--muted);border:1px solid var(--line);
+  font-size:11px;white-space:nowrap
+}
+.moneyTimeFilters button.active{background:var(--panel);color:var(--accent);border-color:var(--accent)}
+.txnList{display:flex;flex-direction:column;gap:7px}
+.txnCard{
+  display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;
+  background:var(--panel);border:1px solid var(--line);cursor:pointer;
+  transition:transform .15s ease
+}
+.txnCard:active{transform:scale(.98)}
+.txnIcon{width:40px;height:40px;border-radius:12px;background:var(--panel2);display:grid;place-items:center;font-size:18px;flex:0 0 auto}
+.txnInfo{flex:1;min-width:0}
+.txnName{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.txnMeta{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.txnAmount{font-size:15px;font-weight:800;flex:0 0 auto;white-space:nowrap}
+.txnAmount.expense{color:var(--danger)}
+.txnAmount.income{color:#58c982}
+.txnEmpty{text-align:center;color:var(--muted);padding:50px 15px;min-height:35svh;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.txnEmpty .emoji{font-size:42px;margin-bottom:8px}
+.moneyMonthCard{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:4px
+}
+.moneyMonthTitle{font-size:14px;font-weight:800;margin:0 0 8px}
+.moneyMonthRow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px}
+.moneyMonthRow.income span:last-child{color:#58c982;font-weight:700}
+.moneyMonthRow.expense span:last-child{color:var(--danger);font-weight:700}
+.moneyMonthRow.balance span:last-child{color:var(--accent);font-weight:700}
+.moneyCatBreak{margin-top:12px}
+.moneyCatBar{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px}
+.moneyCatBar .catIcon{width:22px;text-align:center;flex:0 0 auto}
+.moneyCatBar .catName{flex:1;color:var(--muted)}
+.moneyCatBar .catPct{font-weight:700;min-width:35px;text-align:end;flex:0 0 auto}
+.moneyCatProgress{height:5px;border-radius:99px;background:var(--panel2);overflow:hidden;margin-top:4px}
+.moneyCatProgressFill{height:100%;border-radius:99px;transition:width .5s ease}
+
+/* Payment method selector */
+.paySelector{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.payOption{
+  padding:14px;border-radius:14px;background:var(--panel2);
+  border:2px solid var(--line);text-align:center;cursor:pointer;transition:all .2s ease
+}
+.payOption.active{border-color:var(--accent);background:rgba(247,217,87,.08)}
+.payOption .payIcon{font-size:26px}
+.payOption .payLabel{font-size:12px;margin-top:4px;font-weight:600}
+.payOption.active .payLabel{color:var(--accent)}
+
+/* Category selector */
+.catSelector{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.catOption{
+  padding:8px 12px;border-radius:999px;background:var(--panel2);
+  border:1px solid var(--line);font-size:12px;cursor:pointer;transition:all .2s ease;
+  white-space:nowrap;display:flex;align-items:center;gap:4px
+}
+.catOption.active{background:var(--accent);color:#111;border-color:transparent;font-weight:700}
+.catAddCustom{padding:8px 12px;border-radius:999px;background:transparent;border:1px dashed var(--line);font-size:12px;cursor:pointer;color:var(--muted);white-space:nowrap}
+
+/* Scanner */
+.scannerOverlay{position:fixed;inset:0;z-index:200;background:#000;display:none;flex-direction:column}
+.scannerOverlay.open{display:flex}
+.scannerVideo{flex:1;width:100%;object-fit:cover;min-height:0}
+.scannerFrame{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:85%;max-width:360px;aspect-ratio:3/4.5;pointer-events:none
+}
+.scannerFrame .corner{position:absolute;width:32px;height:32px;border:3px solid var(--accent)}
+.scannerFrame .tl{top:0;left:0;border-right:0;border-bottom:0;border-radius:8px 0 0 0}
+.scannerFrame .tr{top:0;right:0;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
+.scannerFrame .bl{bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 8px}
+.scannerFrame .br{bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 8px 0}
+.scannerInstruction{
+  position:absolute;top:calc(50% + 170px);left:50%;transform:translateX(-50%);
+  color:#fff;font-size:14px;text-align:center;width:90%;
+  text-shadow:0 1px 6px rgba(0,0,0,.6);pointer-events:none
+}
+.scannerControls{
+  display:flex;justify-content:space-around;align-items:center;
+  padding:calc(18px + env(safe-area-inset-bottom)) 20px 18px;
+  background:rgba(0,0,0,.85);flex:0 0 auto
+}
+.scannerBtn{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;display:grid;place-items:center;font-size:19px;border:1px solid rgba(255,255,255,.2);cursor:pointer}
+.scannerCapture{width:66px;height:66px;border-radius:50%;background:var(--accent);color:#111;display:grid;place-items:center;font-size:26px;border:3px solid rgba(255,255,255,.3);cursor:pointer;transition:transform .15s ease}
+.scannerCapture:active{transform:scale(.9)}
+.scannerTopBar{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  padding:calc(10px + env(safe-area-inset-top)) 14px 8px;flex:0 0 auto
+}
+.scannerTopBar button{color:#fff;font-size:16px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2)}
+.scannerLoading{position:absolute;inset:0;background:rgba(0,0,0,.88);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;color:#fff}
+.scannerLoading.open{display:flex}
+.scannerLoading .spinner{width:44px;height:44px;border:3px solid rgba(255,255,255,.15);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scannerLoading .progress{font-size:13px;color:var(--muted)}
+
+/* Receipt review */
+.receiptReviewImg{width:100%;max-height:220px;object-fit:contain;border-radius:12px;background:var(--panel2);margin-bottom:10px}
+.confidenceBadge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;margin-inline-start:6px}
+.confidenceBadge.high{background:rgba(88,201,130,.15);color:#58c982}
+.confidenceBadge.medium{background:rgba(247,217,87,.15);color:var(--accent)}
+.confidenceBadge.low{background:rgba(255,107,107,.15);color:var(--danger)}
+.reviewField{margin-top:10px}
+.reviewField label{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}
+.reviewField input,.reviewField select{
+  width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:11px;padding:10px;outline:0;font-size:14px
+}
+.reviewActions{display:flex;gap:8px;margin-top:16px}
+.reviewActions button{flex:1;padding:11px;border-radius:11px;font-weight:700;cursor:pointer}
+.reviewActions .saveBtn{background:var(--accent);color:#111}
+.reviewActions .editBtn{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+.reviewActions .rescanBtn{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+.reviewActions .cancelBtn{background:rgba(255,107,107,.12);color:var(--danger);border:1px solid rgba(255,107,107,.18)}
+
+/* Money amount input */
+.moneyAmountInput{font-size:26px;font-weight:800;text-align:center;letter-spacing:1px}
+
+/* Quick actions sheet */
+.quickActionSheet{display:flex;flex-direction:column;gap:8px;padding-top:6px}
+.quickActionRow{
+  display:flex;align-items:center;gap:12px;padding:16px;border-radius:14px;
+  background:var(--panel2);border:1px solid var(--line);cursor:pointer;transition:transform .15s ease;text-align:start
+}
+.quickActionRow:active{transform:scale(.97)}
+.quickActionRow .qaIcon{font-size:24px;width:44px;height:44px;border-radius:12px;background:var(--panel);display:grid;place-items:center;flex:0 0 auto}
+.quickActionRow .qaLabel{font-size:15px;font-weight:600}
+
+@media(min-width:700px){
+  .moneyQuickActions{grid-template-columns:repeat(4,1fr)}
+  .scannerFrame{max-width:400px}
+}
+
+</style>
+</head>
+<body>
+<div id="lock" class="lock">
+  <div class="lockbox">
+    <img src="logo.png"><h2>znotes 🔒</h2><p style="color:var(--muted)">أدخل رمز القفل</p>
+    <input id="unlockPin" class="pininput field" type="password" inputmode="numeric" maxlength="6" placeholder="••••">
+    <button class="primary" id="unlockBtn">فتح</button>
+    <p id="lockError" style="color:var(--danger);display:none">الرمز غير صحيح 😭</p>
+  </div>
+</div>
+
+<div class="app">
+<header>
+  <div class="top">
+    <div class="brand"><img src="logo.png"><h1>znotes</h1></div>
+    <div class="topActions">
+      <button class="iconbtn" id="viewBtn" aria-label="تبديل العرض"></button>
+      <button class="iconbtn" id="settingsBtn" aria-label="الإعدادات">⚙️</button>
+    </div>
+  </div>
+  <div class="search"><span>⌕</span><input id="search" placeholder="ابحث في نوتاتك..."></div>
+</header>
+
+<div class="tabs" id="tabs">
+  <button class="active" data-filter="all">الكل</button><button data-filter="pinned">📌 مثبتة</button>
+  <button data-filter="favorite">⭐ المفضلة</button><button data-filter="tasks">☑️ المهام</button>
+  <button data-filter="recipes">🍳 طبخ</button><button data-filter="reminders">🔔 تذكيرات</button><button data-filter="money">💰 المال</button>
+</div>
+
+<main>
+  <div class="sectiontitle"><h2 id="sectionTitle">كل النوتات</h2><span id="count"></span></div>
+  <div id="content" class="grid"></div>
+</main>
+</div>
+
+<button class="fab" id="addBtn">＋</button>
+
+
+<div class="overlay" id="editorOverlay">
+<div class="sheet">
+<div class="handle"></div>
+<div class="sheethead"><h2 id="editorTitle">نوتة جديدة</h2><div class="actions">
+<button class="iconbtn" id="closeEditor">✓</button><button class="iconbtn danger" id="deleteBtn">🗑</button>
+</div></div>
+<div class="field"><label>العنوان</label><input id="titleInput" placeholder="عنوان النوتة"></div>
+<div class="field"><label>المحتوى</label><textarea id="bodyInput" placeholder="اكتب هنا..."></textarea></div>
+<div class="row"><div class="field"><label>التصنيف</label><input id="tagInput" placeholder="مثال: مدرسة"></div>
+<div class="field"><label>التذكير</label><input id="reminderInput" type="datetime-local"></div></div>
+<div class="checkline"><input id="taskInput" type="checkbox"><label for="taskInput">هذه النوتة مهمة / قائمة مهام ☑️</label></div>
+<div class="checkline"><input id="favoriteInput" type="checkbox"><label for="favoriteInput">إضافة للمفضلة ⭐</label></div>
+<div class="field"><label>لون النوتة</label><div class="colors" id="colors"></div></div>
+<button class="primary" id="saveBtn">حفظ النوتة</button>
+</div></div>
+
+
+<div class="overlay" id="recipeOverlay">
+<div class="sheet recipeSheet">
+<div class="handle"></div>
+<div class="sheethead">
+  <h2 id="recipeEditorTitle">طبخة جديدة 🍳</h2>
+  <div class="actions">
+    <button class="iconbtn" id="closeRecipe">✓</button>
+    <button class="iconbtn danger" id="deleteRecipeBtn">🗑</button>
+  </div>
+</div>
+
+<div class="field">
+  <label>اسم الطبخة</label>
+  <input id="recipeNameInput" placeholder="مثال: معكرونة بالبشاميل">
+</div>
+
+<div class="field">
+  <label>المكونات</label>
+  <div id="ingredientList" class="ingredientList"></div>
+  <button class="addIngredient" id="addIngredientBtn">＋ إضافة مكوّن</button>
+</div>
+
+<button class="primary" id="saveRecipeBtn">حفظ الطبخة 🍳</button>
+</div></div>
+
+<div class="overlay" id="shoppingOverlay">
+<div class="sheet">
+<div class="handle"></div>
+<div class="sheethead">
+  <div>
+    <h2 class="shopTitle" id="shopTitle">أغراض الطبخة 🛒</h2>
+    <div class="shopSubtitle">الأشياء اللي لازم تجيبها من الماركت</div>
+  </div>
+  <button class="iconbtn" id="closeShopping">✓</button>
+</div>
+<div id="shoppingList" class="shopList"></div>
+</div></div>
+
+<div class="overlay" id="reminderOverlay">
+<div class="sheet reminderSheet"><div class="handle"></div>
+<div class="sheethead"><h2>تذكير جديد 🔔</h2><button class="iconbtn" id="closeReminder">✓</button></div>
+<div class="field"><label>شو بدك تتذكر؟</label><input id="reminderNameInput" placeholder="مثال: طفي الضواي 💡"></div>
+<div class="field"><label>ملاحظة (اختياري)</label><textarea id="reminderNoteInput" placeholder="مثال: قبل ما أطلع من البيت"></textarea></div>
+<div class="field"><label>وقت التذكير (اختياري)</label><input id="reminderTimeInput" type="datetime-local"></div>
+<button class="primary" id="saveReminderBtn">حفظ التذكير 🔔</button>
+</div></div>
+
+<div class="overlay" id="shoppingManagerOverlay">
+<div class="sheet modalSmall"><div class="handle"></div>
+<div class="sheethead"><h2>🛒 Shopping List</h2><button class="iconbtn" id="closeShoppingManager">✓</button></div>
+<div class="shoppingAdd"><input id="shoppingInput" placeholder="Add item..."><button id="shoppingAddBtn">＋</button></div>
+<div id="shoppingManagerList" class="shoppingGrid"></div>
+</div></div>
+
+<div class="overlay" id="folderOverlay">
+<div class="sheet modalSmall"><div class="handle"></div>
+<div class="sheethead"><h2>📁 Folders</h2><button class="iconbtn" id="closeFolder">✓</button></div>
+<div class="field"><label>Folder name</label><input id="folderNameInput" placeholder="School, Home, Ideas..."></div>
+<button class="primary" id="saveFolderBtn">Create folder 📁</button>
+<div id="folderList" class="folderGrid"></div>
+</div></div>
+
+<div class="overlay" id="todayOverlay">
+<div class="sheet modalSmall"><div class="handle"></div>
+<div id="todayDashboard"></div>
+<button class="primary" id="closeToday">Done ✓</button>
+</div></div>
+<div class="overlay" id="settingsOverlay">
+<div class="sheet">
+<div class="handle"></div><div class="sheethead"><h2>الإعدادات ⚙️</h2><button class="iconbtn" id="closeSettings">✓</button></div>
+<div class="field"><label>🎨 Theme</label><div class="themeRow" id="themeRow">
+<button class="themeBtn" data-theme="dark">🌑 Dark</button>
+<button class="themeBtn" data-theme="light">☀️ Light</button>
+</div></div>
+<div class="settingsList">
+<button class="settingbtn" id="shoppingSettingsBtn"><span>🛒 Shopping List</span><b>›</b></button>
+<button class="settingbtn" id="foldersSettingsBtn"><span>📁 Folders</span><b>›</b></button>
+<button class="settingbtn" id="languageBtn"><span>🌐 Language / اللغة</span><b id="languageValue">العربية</b></button>
+<button class="settingbtn" id="themeBtn"><span>🌓 المظهر</span><b id="themeText">داكن</b></button>
+<button class="settingbtn" id="fontBtn"><span>🔤 حجم الخط</span><b id="fontText">متوسط</b></button>
+<button class="settingbtn" id="lockBtn"><span>🔒 قفل التطبيق</span><b id="lockText">غير مفعل</b></button>
+<button class="settingbtn" id="exportBtn"><span>📤 تصدير النوتات</span><b>JSON</b></button>
+<button class="settingbtn" id="importBtn"><span>📥 استيراد النوتات</span><b>JSON</b></button>
+<input id="fileInput" type="file" accept="application/json" hidden>
+<button class="settingbtn danger" id="clearBtn"><span>🗑 حذف كل النوتات</span><b>⚠️</b></button>
+</div>
+<p style="color:var(--muted);font-size:12px;text-align:center;margin-top:20px">znotes • ملاحظاتك، بطريقتك ✨</p>
+</div></div>
+
+
+<!-- Money Expense Editor -->
+<div class="overlay" id="moneyExpenseOverlay">
+<div class="sheet">
+<div class="handle"></div>
+<div class="sheethead"><h2 id="moneyExpenseTitle">💸 مصروف جديد</h2><div class="actions">
+<button class="iconbtn" id="closeMoneyExpense">✓</button>
+<button class="iconbtn danger" id="deleteMoneyExpense" style="display:none">🗑</button>
+</div></div>
+<div class="field"><label id="mlAmount">المبلغ</label><input id="moneyAmount" class="moneyAmountInput" type="text" inputmode="decimal" placeholder="0.00"></div>
+<div class="field"><label id="mlName">الاسم / الوصف</label><input id="moneyName" placeholder=""></div>
+<div class="field"><label id="mlCategory">التصنيف</label><div id="moneyCatSelector" class="catSelector"></div></div>
+<div class="field"><label id="mlPayMethod">طريقة الدفع</label><div class="paySelector" id="moneyPaySelector">
+<div class="payOption active" data-pay="card"><div class="payIcon">💳</div><div class="payLabel" id="mlCard">كرت</div></div>
+<div class="payOption" data-pay="cash"><div class="payIcon">💵</div><div class="payLabel" id="mlCash">كاش</div></div>
+</div></div>
+<div class="field"><label id="mlDate">التاريخ</label><input id="moneyDate" type="date"></div>
+<div class="field"><label id="mlNote">ملاحظة (اختياري)</label><input id="moneyNote" placeholder=""></div>
+<button class="primary" id="saveMoneyExpense">💾 حفظ</button>
+</div></div>
+
+<!-- Money Income Editor -->
+<div class="overlay" id="moneyIncomeOverlay">
+<div class="sheet">
+<div class="handle"></div>
+<div class="sheethead"><h2 id="moneyIncomeTitle">💰 دخل جديد</h2><div class="actions">
+<button class="iconbtn" id="closeMoneyIncome">✓</button>
+<button class="iconbtn danger" id="deleteMoneyIncome" style="display:none">🗑</button>
+</div></div>
+<div class="field"><label id="mlIncAmount">المبلغ</label><input id="incomeAmount" class="moneyAmountInput" type="text" inputmode="decimal" placeholder="0.00"></div>
+<div class="field"><label id="mlIncSource">المصدر</label><input id="incomeSource" placeholder=""></div>
+<div class="field"><label id="mlIncPayMethod">طريقة الدفع</label><div class="paySelector" id="incomePaySelector">
+<div class="payOption active" data-pay="card"><div class="payIcon">💳</div><div class="payLabel" id="mlIncCard">كرت</div></div>
+<div class="payOption" data-pay="cash"><div class="payIcon">💵</div><div class="payLabel" id="mlIncCash">كاش</div></div>
+</div></div>
+<div class="field"><label id="mlIncDate">التاريخ</label><input id="incomeDate" type="date"></div>
+<div class="field"><label id="mlIncNote">ملاحظة (اختياري)</label><input id="incomeNote" placeholder=""></div>
+<button class="primary" id="saveMoneyIncome">💾 حفظ</button>
+</div></div>
+
+<!-- Receipt Scanner -->
+<div class="scannerOverlay" id="scannerOverlay">
+<video class="scannerVideo" id="scannerVideo" playsinline autoplay muted></video>
+<div class="scannerTopBar">
+<button class="iconbtn" id="closeScanner">✕</button>
+<div style="display:flex;gap:7px">
+<button class="iconbtn" id="scannerFlash" style="display:none">⚡</button>
+<button class="iconbtn" id="scannerSwitch" style="display:none">🔄</button>
+</div>
+</div>
+<div class="scannerFrame">
+<div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+</div>
+<div class="scannerInstruction" id="scannerInstruction">ضع الفاتورة داخل الإطار</div>
+<div class="scannerControls">
+<button class="scannerBtn" id="scannerGallery">🖼️</button>
+<button class="scannerCapture" id="scannerCapture">📷</button>
+<button class="scannerBtn" id="scannerSkip">⌨️</button>
+</div>
+<div class="scannerLoading" id="scannerLoading">
+<div class="spinner"></div>
+<div class="progress" id="scannerProgress">جاري المعالجة...</div>
+</div>
+<input type="file" id="receiptFileInput" accept="image/*" capture="environment" hidden>
+</div>
+
+<!-- Receipt Review -->
+<div class="overlay" id="receiptReviewOverlay">
+<div class="sheet">
+<div class="handle"></div>
+<div class="sheethead"><h2 id="receiptReviewTitle">🧾 مراجعة الفاتورة</h2><button class="iconbtn" id="closeReceiptReview">✓</button></div>
+<div id="receiptReviewContent"></div>
+</div></div>
+
+<!-- Transaction Detail -->
+<div class="overlay" id="txnDetailOverlay">
+<div class="sheet modalSmall">
+<div class="handle"></div>
+<div class="sheethead"><h2 id="txnDetailTitle">تفاصيل العملية</h2><div class="actions">
+<button class="iconbtn" id="closeTxnDetail">✓</button>
+<button class="iconbtn danger" id="deleteTxnDetail">🗑</button>
+</div></div>
+<div id="txnDetailContent"></div>
+<button class="primary" id="editTxnDetail" style="margin-top:12px">✏️ تعديل</button>
+</div></div>
+
+<!-- Money Quick Actions -->
+<div class="overlay" id="moneyQuickOverlay">
+<div class="sheet modalSmall">
+<div class="handle"></div>
+<div class="sheethead"><h2 id="moneyQuickTitle">إجراء سريع</h2><button class="iconbtn" id="closeMoneyQuick">✓</button></div>
+<div class="quickActionSheet" id="moneyQuickList"></div>
+</div></div>
+
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY="znotes-data-v2", SETTINGS="znotes-settings-v2", RECIPES="znotes-recipes-v1", REMINDERS="znotes-reminders-v1";
+const MONEY_KEY="znotes-money";
+const COLORS=[
+{id:"yellow",bg:"#4a3d12",ink:"#fff0a8",dot:"#F7D957"},{id:"blue",bg:"#123246",ink:"#b9e8ff",dot:"#51b9ee"},
+{id:"green",bg:"#183524",ink:"#c3f3d1",dot:"#58c982"},{id:"red",bg:"#401e24",ink:"#ffc7ce",dot:"#ef6674"},
+{id:"purple",bg:"#30203e",ink:"#e2caff",dot:"#a76ee8"},{id:"gray",bg:"#2b2d31",ink:"#ededed",dot:"#9da3ad"}
+];
+let notes=[], recipes=[], reminders=[], view="grid", filter="all", editing=null, editingRecipe=null, lang="ar", settings={theme:"dark",font:16,lock:null};
+let moneyData={transactions:[],customCategories:[]};
+
+const $=id=>document.getElementById(id);
+function load(){
+ try{notes=JSON.parse(localStorage.getItem(KEY)||"[]")}catch{notes=[]}
+ try{recipes=JSON.parse(localStorage.getItem(RECIPES)||"[]")}catch{recipes=[]}
+ try{reminders=JSON.parse(localStorage.getItem(REMINDERS)||"[]")}catch{reminders=[]}
+ try{settings={...settings,...JSON.parse(localStorage.getItem(SETTINGS)||"{}")}}catch{}
+ try{lang=localStorage.getItem("znotes-language")||"ar"}catch{}
+ try{moneyData=JSON.parse(localStorage.getItem(MONEY_KEY)||'{"transactions":[],"customCategories":[]}')}catch{moneyData={transactions:[],customCategories:[]}}
+ applySettings();applyLanguage();
+}
+function persist(){localStorage.setItem(KEY,JSON.stringify(notes))}
+function persistRecipes(){localStorage.setItem(RECIPES,JSON.stringify(recipes))}
+function persistReminders(){localStorage.setItem(REMINDERS,JSON.stringify(reminders))}
+function saveSettings(){localStorage.setItem(SETTINGS,JSON.stringify(settings))}
+function persistMoney(){try{localStorage.setItem(MONEY_KEY,JSON.stringify(moneyData))}catch(e){toast("Storage full 😭")}}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML}
+function color(id){return COLORS.find(x=>x.id===id)||COLORS[0]}
+function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800)}
+
+function filtered(){
+ const q=$("search").value.trim().toLowerCase();
+ return notes.filter(n=>{
+   const text=(n.title+" "+n.body+" "+(n.tag||"")).toLowerCase();
+   const okq=!q||text.includes(q);
+   const okf=filter==="all"||filter==="pinned"&&n.pinned||filter==="favorite"&&n.favorite||filter==="tasks"&&n.task;
+   return okq&&okf;
+ }).sort((a,b)=>(!!b.pinned-!!a.pinned)||(b.updatedAt-a.updatedAt));
+}
+function render(){
+ if(filter==="recipes"){renderRecipes();return}
+ if(filter==="reminders"){renderReminders();return}
+ if(filter==="money"){renderMoney();return}
+ const arr=filtered(), c=$("content");
+ c.className="grid"+(view==="list"?" list":"");
+ $("count").textContent=arr.length+" نوتة";
+ $("sectionTitle").textContent={all:tr("notes"),pinned:tr("pinned"),favorite:tr("favorite"),tasks:tr("tasks")}[filter];
+ c.innerHTML="";
+ if(!arr.length){c.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="emoji">📝</div>ما في شي هون... اكتب أول نوتة 😎</div>';return}
+ arr.forEach(n=>{
+   if(n.task){
+    const row=document.createElement("div");row.className="taskrow"+(n.done?" done":"");
+    row.innerHTML=`<input type="checkbox" ${n.done?"checked":""}><div class="tasktext" style="flex:1"><b>${esc(n.title||"مهمة")}</b><div style="color:var(--muted);font-size:12px;margin-top:3px">${esc(n.body)}</div></div><span>${n.favorite?"⭐":""}</span>`;
+    row.querySelector("input").onclick=e=>{e.stopPropagation();n.done=!n.done;n.updatedAt=Date.now();persist();render()};
+    row.onclick=()=>openEditor(n);c.appendChild(row);return;
+   }
+   const cc=color(n.color), card=document.createElement("div");card.className="card";card.style.background=cc.bg;card.style.color=cc.ink;
+   card.innerHTML=`${n.pinned?"<span class=pin>📌</span>":""}<h3>${n.favorite?"⭐ ":""}${esc(n.title||"بدون عنوان")}</h3><p>${esc(n.body||"فارغة...")}</p><div class=meta>${n.tag?`<span class=tag>#${esc(n.tag)}</span>`:""}${n.reminder?`<span>🔔 ${new Date(n.reminder).toLocaleString("ar")}</span>`:""}</div>`;
+   card.onclick=()=>openEditor(n);c.appendChild(card);
+ });
+}
+
+function renderReminders(){
+ const c=$("content");c.className="reminderGrid";
+ $("sectionTitle").textContent=tr("reminders");
+ $("count").textContent=reminders.filter(r=>!r.done).length+" باقي";
+ c.innerHTML="";
+ if(!reminders.length){c.innerHTML='<div class="reminderEmpty"><div class="emoji">🔔</div>'+tr("noReminders")+'<br><small>＋</small></div>';return}
+ reminders.slice().sort((a,b)=>(a.done-b.done)||((a.time||"").localeCompare(b.time||""))).forEach(r=>{
+   const card=document.createElement("div");card.className="reminderCard"+(r.done?" done":"");
+   const time=r.time?new Date(r.time).toLocaleString("ar-TR",{dateStyle:"medium",timeStyle:"short"}):"بدون وقت محدد";
+   card.innerHTML=`<input type="checkbox" ${r.done?"checked":""}><div class="reminderText"><div class="reminderName">${esc(r.name)}</div>${r.note?`<div class="reminderTime">${esc(r.note)}</div>`:""}<div class="reminderTime">⏰ ${esc(time)}</div></div><button class="reminderDelete">🗑️</button>`;
+   card.querySelector("input").onchange=e=>{r.done=e.target.checked;persistReminders();renderReminders()};
+   card.querySelector(".reminderDelete").onclick=()=>{reminders=reminders.filter(x=>x.id!==r.id);persistReminders();renderReminders();toast("انحذف التذكير 🗑️")};
+   c.appendChild(card);
+ });
+}
+
+function renderRecipes(){
+ const c=$("content"); c.className="recipeGrid";
+ $("sectionTitle").textContent=tr("recipes");
+ $("count").textContent=recipes.length+" طبخة";
+ c.innerHTML="";
+ if(!recipes.length){
+   c.innerHTML='<div class="recipeEmpty"><div class="emoji">🍳</div>ما عندك طبخات لسا 😎<br><small>اضغط ＋ وأضف أول طبخة!</small></div>';
+   return;
+ }
+ recipes.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).forEach(r=>{
+   const card=document.createElement("div");card.className="recipeCard";
+   const preview=(r.ingredients||[]).filter(x=>x.name.trim()).slice(0,4);
+   card.innerHTML=`
+     <div class="recipeTop">
+       <div class="recipeTitle">🍳 ${esc(r.name||"طبخة بدون اسم")}</div>
+       <div class="recipeActions">
+         <button class="miniBtn viewRecipe" title="أغراض الماركت">👁️</button>
+         <button class="miniBtn editRecipe" title="تعديل">✏️</button>
+       </div>
+     </div>
+     <div class="ingredientPreview">
+       ${preview.map(x=>`<span class="ingredientChip">${esc(x.name)} • ${esc(x.qty)} ${esc(x.unit)}</span>`).join("")}
+     </div>
+     <div class="recipeCount">${(r.ingredients||[]).filter(x=>x.name.trim()).length} مكوّن • اضغط 👁️ لتشوف أغراض الماركت 🛒</div>
+   `;
+   card.querySelector(".viewRecipe").onclick=e=>{e.stopPropagation();openShopping(r)};
+   card.querySelector(".editRecipe").onclick=e=>{e.stopPropagation();openRecipeEditor(r)};
+   card.onclick=()=>openShopping(r);
+   c.appendChild(card);
+ });
+}
+
+function openEditor(n){
+ editing=n?{...n}:{id:uid(),title:"",body:"",tag:"",color:"yellow",pinned:false,favorite:false,task:false,done:false,reminder:"",updatedAt:Date.now(),isNew:true};
+ $("editorTitle").textContent=editing.isNew?"نوتة جديدة":"تعديل النوتة";
+ $("titleInput").value=editing.title;$("bodyInput").value=editing.body;$("tagInput").value=editing.tag||"";
+ $("reminderInput").value=editing.reminder||"";$("taskInput").checked=!!editing.task;$("favoriteInput").checked=!!editing.favorite;
+ $("deleteBtn").style.display=editing.isNew?"none":"grid"; buildColors();$("editorOverlay").classList.add("open");
+}
+function closeEditor(){$("editorOverlay").classList.remove("open");editing=null}
+function buildColors(){
+ $("colors").innerHTML="";COLORS.forEach(c=>{let b=document.createElement("button");b.className="color"+(editing.color===c.id?" sel":"");b.style.background=c.dot;b.onclick=()=>{editing.color=c.id;buildColors()};$("colors").appendChild(b)})
+}
+
+$("shoppingSettingsBtn").onclick=openShoppingManager;
+$("foldersSettingsBtn").onclick=openFolders;
+document.querySelectorAll(".themeBtn").forEach(b=>b.onclick=()=>{
+ settings.theme=b.dataset.theme;localStorage.setItem(SETTINGS,JSON.stringify(settings));applySettings();
+ document.querySelectorAll(".themeBtn").forEach(x=>x.classList.toggle("active",x.dataset.theme===settings.theme));
+});
+document.querySelectorAll(".themeBtn").forEach(x=>x.classList.toggle("active",x.dataset.theme===settings.theme));
+$("languageBtn").onclick=()=>{
+ lang=lang==="ar"?"en":"ar";
+ localStorage.setItem("znotes-language",lang);
+ applyLanguage();render();
+ toast(lang==="en"?"English enabled 🇬🇧":"تم تفعيل العربية 🇸🇦");
+};
+
+let shoppingItems=[];
+let folders=[];
+try{shoppingItems=JSON.parse(localStorage.getItem("znotes-shopping-v1")||"[]")}catch{}
+try{folders=JSON.parse(localStorage.getItem("znotes-folders-v1")||"[]")}catch{}
+function saveShopping(){localStorage.setItem("znotes-shopping-v1",JSON.stringify(shoppingItems))}
+function saveFolders(){localStorage.setItem("znotes-folders-v1",JSON.stringify(folders))}
+function openShoppingManager(){renderShoppingManager();$("shoppingManagerOverlay").classList.add("open")}
+function renderShoppingManager(){
+ const c=$("shoppingManagerList");c.innerHTML="";
+ if(!shoppingItems.length){c.innerHTML='<div class="reminderEmpty">🛒<br>No shopping items yet.</div>';return}
+ shoppingItems.forEach((x,i)=>{
+  const row=document.createElement("label");row.className="shoppingItem"+(x.done?" done":"");
+  row.innerHTML=`<input type="checkbox" ${x.done?"checked":""}><span style="flex:1">${esc(x.name)}</span><button class="reminderDelete" type="button">🗑️</button>`;
+  row.querySelector("input").onchange=e=>{x.done=e.target.checked;saveShopping();renderShoppingManager()};
+  row.querySelector("button").onclick=e=>{e.preventDefault();shoppingItems.splice(i,1);saveShopping();renderShoppingManager()};
+  c.appendChild(row);
+ });
+}
+$("shoppingAddBtn").onclick=()=>{
+ const v=$("shoppingInput").value.trim();if(!v)return;
+ shoppingItems.push({id:uid(),name:v,done:false});$("shoppingInput").value="";saveShopping();renderShoppingManager();
+};
+$("closeShoppingManager").onclick=()=>$("shoppingManagerOverlay").classList.remove("open");
+
+function openFolders(){renderFolders();$("folderOverlay").classList.add("open")}
+function renderFolders(){
+ const c=$("folderList");c.innerHTML="";
+ folders.forEach((f,i)=>{
+  const d=document.createElement("div");d.className="folderCard";
+  d.innerHTML=`<div class="folderHead"><span class="folderName">📁 ${esc(f.name)}</span><button class="miniBtn">🗑️</button></div><div class="folderCount">${notes.filter(n=>n.folderId===f.id).length} notes</div>`;
+  d.querySelector("button").onclick=()=>{folders.splice(i,1);notes.forEach(n=>{if(n.folderId===f.id)n.folderId=null});saveFolders();persist();renderFolders()};
+  c.appendChild(d);
+ });
+}
+$("saveFolderBtn").onclick=()=>{
+ const n=$("folderNameInput").value.trim();if(!n){toast("Enter a folder name 😭");return}
+ folders.push({id:uid(),name:n});$("folderNameInput").value="";saveFolders();renderFolders();toast("Folder created 📁");
+};
+$("closeFolder").onclick=()=>$("folderOverlay").classList.remove("open");
+
+function renderToday(){
+ const activeRem=reminders.filter(r=>!r.done).length;
+ const tasks=notes.filter(n=>n.task&&!n.done).length;
+ const recipesCount=recipes.length;
+ const shop=shoppingItems.filter(x=>!x.done).length;
+ $("todayDashboard").innerHTML=`<div class="dashboard">
+ <div class="welcome"><h2>Good day 👋</h2><p>${new Date().toLocaleDateString(lang==="ar"?"ar-TR":"en-US",{weekday:"long",month:"long",day:"numeric"})}</p></div>
+ <div class="statgrid">
+  <div class="stat"><b>🔔 ${activeRem}</b><span>${lang==="ar"?"تذكيرات":"Reminders"}</span></div>
+  <div class="stat"><b>☑️ ${tasks}</b><span>${lang==="ar"?"مهام":"Tasks"}</span></div>
+  <div class="stat"><b>🛒 ${shop}</b><span>${lang==="ar"?"مشتريات":"Shopping"}</span></div>
+  <div class="stat"><b>🍳 ${recipesCount}</b><span>${lang==="ar"?"طبخات":"Recipes"}</span></div>
+ </div>
+ <div class="quickGrid">
+  <button class="quick" id="todayReminder">🔔 <b>${lang==="ar"?"التذكيرات":"Reminders"}</b><small>${activeRem} open</small></button>
+  <button class="quick" id="todayShop">🛒 <b>${lang==="ar"?"المشتريات":"Shopping"}</b><small>${shop} items</small></button>
+  <button class="quick" id="todayFolders">📁 <b>${lang==="ar"?"المجلدات":"Folders"}</b><small>${folders.length}</small></button>
+  <button class="quick" id="todayNotes">📝 <b>${lang==="ar"?"النوتات":"Notes"}</b><small>${notes.length}</small></button>
+ </div></div>`;
+ $("todayReminder").onclick=()=>{$("todayOverlay").classList.remove("open");filter="reminders";document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x.dataset.filter==="reminders"));render()};
+ $("todayShop").onclick=()=>{$("todayOverlay").classList.remove("open");openShoppingManager()};
+ $("todayFolders").onclick=()=>{$("todayOverlay").classList.remove("open");openFolders()};
+ $("todayNotes").onclick=()=>{$("todayOverlay").classList.remove("open");filter="all";document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x.dataset.filter==="all"));render()};
+}
+$("closeToday").onclick=()=>$("todayOverlay").classList.remove("open");
+let editingReminder=null;
+function openReminderEditor(){
+ editingReminder={id:uid(),name:"",note:"",time:"",done:false};
+ $("reminderNameInput").value="";$("reminderNoteInput").value="";$("reminderTimeInput").value="";
+ $("reminderOverlay").classList.add("open");setTimeout(()=>$("reminderNameInput").focus(),80);
+}
+$("saveReminderBtn").onclick=()=>{
+ const name=$("reminderNameInput").value.trim();
+ if(!name){toast("اكتب شو بدك تتذكر أول 😭");return}
+ editingReminder.name=name;editingReminder.note=$("reminderNoteInput").value.trim();
+ editingReminder.time=$("reminderTimeInput").value;editingReminder.updatedAt=Date.now();
+ reminders.unshift(editingReminder);persistReminders();
+ $("reminderOverlay").classList.remove("open");editingReminder=null;render();toast("انحفظ التذكير 🔔✨");
+};
+$("closeReminder").onclick=()=>{$("reminderOverlay").classList.remove("open");editingReminder=null};
+$("reminderOverlay").onclick=e=>{if(e.target.id==="reminderOverlay"){$("reminderOverlay").classList.remove("open");editingReminder=null}};
+
+function newIngredient(){return {id:uid(),name:"",qty:"1",unit:"عدد"}}
+
+function openRecipeEditor(r){
+ editingRecipe=r?JSON.parse(JSON.stringify(r)):{
+   id:uid(),name:"",ingredients:[newIngredient()],updatedAt:Date.now(),isNew:true
+ };
+ $("recipeEditorTitle").textContent=editingRecipe.isNew?"طبخة جديدة 🍳":"تعديل الطبخة";
+ $("recipeNameInput").value=editingRecipe.name||"";
+ $("deleteRecipeBtn").style.display=editingRecipe.isNew?"none":"grid";
+ renderIngredientInputs();
+ $("recipeOverlay").classList.add("open");
+}
+
+function renderIngredientInputs(){
+ const list=$("ingredientList"); list.innerHTML="";
+ (editingRecipe.ingredients||[]).forEach((ing,i)=>{
+   const row=document.createElement("div");row.className="ingredientRow";
+   row.innerHTML=`
+     <input class="ingName" placeholder="المكوّن" value="${esc(ing.name||"")}">
+     <input class="qtyInput ingQty" inputmode="decimal" placeholder="1" value="${esc(ing.qty||"")}">
+     <select class="ingUnit">
+       <option>kg</option><option>lt</option><option>عدد</option>
+     </select>
+     <button class="removeIng" title="حذف">×</button>
+   `;
+   row.querySelector(".ingUnit").value=ing.unit||"عدد";
+   row.querySelector(".ingName").oninput=e=>editingRecipe.ingredients[i].name=e.target.value;
+   row.querySelector(".ingQty").oninput=e=>editingRecipe.ingredients[i].qty=e.target.value;
+   row.querySelector(".ingUnit").onchange=e=>editingRecipe.ingredients[i].unit=e.target.value;
+   row.querySelector(".removeIng").onclick=()=>{
+     editingRecipe.ingredients.splice(i,1);
+     if(!editingRecipe.ingredients.length)editingRecipe.ingredients.push(newIngredient());
+     renderIngredientInputs();
+   };
+   list.appendChild(row);
+ });
+}
+
+$("addIngredientBtn").onclick=()=>{
+ editingRecipe.ingredients.push(newIngredient());
+ renderIngredientInputs();
+ const inputs=$("ingredientList").querySelectorAll(".ingName"); if(inputs.length)inputs[inputs.length-1].focus();
+};
+
+$("saveRecipeBtn").onclick=()=>{
+ const name=$("recipeNameInput").value.trim();
+ const ingredients=(editingRecipe.ingredients||[])
+   .map(x=>({id:x.id||uid(),name:String(x.name||"").trim(),qty:String(x.qty||"").trim(),unit:x.unit||"عدد"}))
+   .filter(x=>x.name);
+ if(!name){toast("اكتب اسم الطبخة أول 😭");$("recipeNameInput").focus();return}
+ if(!ingredients.length){toast("ضيف مكوّن واحد على الأقل 🥔");return}
+ editingRecipe.name=name;editingRecipe.ingredients=ingredients;editingRecipe.updatedAt=Date.now();
+ const i=recipes.findIndex(x=>x.id===editingRecipe.id);
+ if(i>=0)recipes[i]=editingRecipe;else recipes.unshift(editingRecipe);
+ persistRecipes();$("recipeOverlay").classList.remove("open");editingRecipe=null;render();toast("انحفظت الطبخة 🍳✨");
+};
+
+$("closeRecipe").onclick=()=>{
+ $("recipeOverlay").classList.remove("open");editingRecipe=null;
+};
+$("recipeOverlay").onclick=e=>{if(e.target.id==="recipeOverlay"){$("recipeOverlay").classList.remove("open");editingRecipe=null}};
+
+$("deleteRecipeBtn").onclick=()=>{
+ if(!editingRecipe)return;
+ if(confirm("متأكد بدك تحذف الطبخة؟")){
+   recipes=recipes.filter(x=>x.id!==editingRecipe.id);
+   persistRecipes();$("recipeOverlay").classList.remove("open");editingRecipe=null;render();toast("انحذفت الطبخة 🗑️");
+ }
+};
+
+function openShopping(r){
+ $("shopTitle").textContent=(r.name||"الطبخة")+" 🛒";
+ const list=$("shoppingList");list.innerHTML="";
+ (r.ingredients||[]).filter(x=>x.name.trim()).forEach((ing,i)=>{
+   const row=document.createElement("label");row.className="shopItem";
+   row.innerHTML=`<input type="checkbox"><span class="shopName" style="flex:1">${esc(ing.name)}</span><b>${esc(ing.qty)} ${esc(ing.unit)}</b>`;
+   const cb=row.querySelector("input");
+   cb.onchange=()=>row.classList.toggle("done",cb.checked);
+   list.appendChild(row);
+ });
+ $("shoppingOverlay").classList.add("open");
+}
+$("closeShopping").onclick=()=>$("shoppingOverlay").classList.remove("open");
+$("shoppingOverlay").onclick=e=>{if(e.target.id==="shoppingOverlay")$("shoppingOverlay").classList.remove("open")};
+
+$("saveBtn").onclick=()=>{
+ const title=$("titleInput").value.trim(),body=$("bodyInput").value.trim();
+ if(!title&&!body){closeEditor();return}
+ Object.assign(editing,{title,body,tag:$("tagInput").value.trim(),reminder:$("reminderInput").value,task:$("taskInput").checked,favorite:$("favoriteInput").checked,updatedAt:Date.now()});
+ const i=notes.findIndex(n=>n.id===editing.id);if(i>=0)notes[i]=editing;else notes.unshift(editing);
+ persist();closeEditor();render();toast("تم حفظ النوتة ✨");
+};
+$("deleteBtn").onclick=()=>{if(confirm("متأكد بدك تحذف النوتة؟")){notes=notes.filter(n=>n.id!==editing.id);persist();closeEditor();render();toast("انحذفت 🗑️")}}
+$("closeEditor").onclick=closeEditor;
+$("editorOverlay").onclick=e=>{if(e.target.id==="editorOverlay")closeEditor()}
+$("addBtn").onclick=()=>{
+ if(filter==="money"){openMoneyQuickActions();return}
+ if(filter==="recipes")openRecipeEditor(null);
+ else if(filter==="reminders")openReminderEditor();
+ else openEditor(null);
+};
+$("search").oninput=render;
+$("viewBtn").onclick=()=>{view=view==="grid"?"list":"grid";$("viewBtn").textContent=view==="grid"?"☷":"▦";render()};
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
+ filter=b.dataset.filter;
+ document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("active"));
+ b.classList.add("active");
+ b.scrollIntoView({behavior:"smooth",inline:"nearest",block:"nearest"});
+ var c=$("content");c.classList.add("fade");
+ setTimeout(function(){render();c.classList.remove("fade")},150);
+});
+
+$("closeSettings").onclick=()=>$("settingsOverlay").classList.remove("open");
+$("settingsBtn").onclick=()=>$("settingsOverlay").classList.add("open");
+$("settingsOverlay").onclick=e=>{if(e.target.id==="settingsOverlay")$("settingsOverlay").classList.remove("open")}
+$("themeBtn").onclick=()=>{settings.theme=settings.theme==="dark"?"light":"dark";saveSettings();applySettings()}
+$("fontBtn").onclick=()=>{settings.font=settings.font===16?18:settings.font===18?14:16;saveSettings();applySettings()}
+
+const T={
+ ar:{brand:"znotes",search:"ابحث...",all:"الكل",pinned:"📌 مثبتة",favorite:"⭐ المفضلة",tasks:"☑️ المهام",recipes:"🍳 طبخ",reminders:"🔔 تذكيرات",add:"＋",settings:"الإعدادات",notes:"كل النوتات",empty:"ما في شي هون... اكتب أول نوتة 😎",language:"العربية",newReminder:"تذكير جديد 🔔",what:"شو بدك تتذكر؟",note:"ملاحظة (اختياري)",time:"وقت التذكير (اختياري)",save:"حفظ التذكير 🔔",noReminders:"ما في تذكيرات لسا 😎",money:"💰 المال",balance:"الرصيد الحالي",income:"الدخل",expenses:"المصاريف",operations:"عمليات",addExpense:"إضافة مصروف",addIncome:"إضافة دخل",scanReceipt:"مسح فاتورة",allTransactions:"العمليات",amount:"المبلغ",category:"التصنيف",paymentMethod:"طريقة الدفع",card:"كرت",cash:"كاش",date:"التاريخ",time:"الوقت",tax:"الضريبة",receiptNumber:"رقم الفاتورة",store:"المتجر",note:"ملاحظة",customCat:"تصنيف جديد",enterAmount:"أدخل المبلغ أولاً",saved:"تم الحفظ",deleted:"تم الحذف",confirmDelete:"متأكد من الحذف؟",cameraError:"تعذر الوصول للكاميرا",ocrError:"تعذر تشغيل OCR",processing:"جاري المعالجة...",ocr:"OCR",edit:"تعديل",scanAgain:"مسح مرة أخرى",cancel:"إلغاء",selectPay:"اختر",high:"عالية",medium:"متوسطة",low:"منخفضة",monthlyIncome:"دخل هذا الشهر",monthlyExpenses:"مصاريف هذا الشهر",monthlyBalance:"رصيد هذا الشهر",noTransactions:"لا توجد عمليات بعد",allF:"الكل",today:"اليوم",thisWeek:"هذا الأسبوع",thisMonth:"هذا الشهر",searchMoney:"ابحث في عملياتك",expense:"مصروف",salary:"راتب",gift:"هدية",work:"عمل",other:"أخرى"},
+ en:{brand:"znotes",search:"Search...",all:"All",pinned:"📌 Pinned",favorite:"⭐ Favorites",tasks:"☑️ Tasks",recipes:"🍳 Cooking",reminders:"🔔 Reminders",add:"＋",settings:"Settings",notes:"All Notes",empty:"Nothing here... write your first note 😎",language:"English",newReminder:"New Reminder 🔔",what:"What do you want to remember?",note:"Note (optional)",time:"Reminder time (optional)",save:"Save reminder 🔔",noReminders:"No reminders yet 😎",money:"💰 Money",balance:"Current Balance",income:"Income",expenses:"Expenses",operations:"Transactions",addExpense:"Add Expense",addIncome:"Add Income",scanReceipt:"Scan Receipt",allTransactions:"Transactions",amount:"Amount",category:"Category",paymentMethod:"Payment",card:"Card",cash:"Cash",date:"Date",time:"Time",tax:"Tax",receiptNumber:"Receipt No.",store:"Store",note:"Note",customCat:"Custom",enterAmount:"Enter amount first",saved:"Saved",deleted:"Deleted",confirmDelete:"Are you sure?",cameraError:"Camera unavailable",ocrError:"OCR unavailable",processing:"Processing...",ocr:"OCR",edit:"Edit",scanAgain:"Scan again",cancel:"Cancel",selectPay:"Select",high:"High",medium:"Medium",low:"Low",monthlyIncome:"Income this month",monthlyExpenses:"Expenses this month",monthlyBalance:"Balance this month",noTransactions:"No transactions yet",allF:"All",today:"Today",thisWeek:"This week",thisMonth:"This month",searchMoney:"Search transactions",expense:"Expense",salary:"Salary",gift:"Gift",work:"Work",other:"Other"}
+};
+function tr(k){return (T[lang]||T.ar)[k]||k}
+function applyLanguage(){
+ document.documentElement.lang=lang;
+ document.documentElement.dir=lang==="ar"?"rtl":"ltr";
+ const q=id=>$(id);
+ if(q("search"))q("search").placeholder=tr("search");
+ if(q("languageValue"))q("languageValue").textContent=tr("language");
+ const tabMap={all:"all",pinned:"pinned",favorite:"favorite",tasks:"tasks",recipes:"recipes",reminders:"reminders",money:"money"};
+ document.querySelectorAll("[data-bottom=\"today\"]").forEach(b=>b.onclick=()=>{$("todayOverlay").classList.add("open");renderToday()});
+document.querySelectorAll("#tabs button").forEach(b=>{if(tabMap[b.dataset.filter])b.textContent=tr(tabMap[b.dataset.filter])});
+ if(q("addBtn"))q("addBtn").textContent=tr("add");
+ if(q("reminderEditorTitle"))q("reminderEditorTitle").textContent=tr("newReminder");
+ if(q("reminderNameInput"))q("reminderNameInput").previousElementSibling.textContent=tr("what");
+ if(q("reminderNoteInput"))q("reminderNoteInput").previousElementSibling.textContent=tr("note");
+ if(q("reminderTimeInput"))q("reminderTimeInput").previousElementSibling.textContent=tr("time");
+ if(q("saveReminderBtn"))q("saveReminderBtn").textContent=tr("save");
+}
+function applySettings(){
+ document.body.classList.toggle("light",settings.theme==="light");document.documentElement.style.setProperty("--font",settings.font+"px");
+ $("themeText").textContent=settings.theme==="dark"?"داكن":"فاتح";$("fontText").textContent=settings.font===16?"متوسط":settings.font===18?"كبير":"صغير";$("lockText").textContent=settings.lock?"مفعل":"غير مفعل";
+}
+$("exportBtn").onclick=()=>{
+ const backup={notes,recipes,reminders,money:moneyData};
+ const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="znotes-backup.json";a.click();URL.revokeObjectURL(a.href);toast("تم تصدير النسخة الاحتياطية 📤")
+};
+$("importBtn").onclick=()=>$("fileInput").click();
+$("fileInput").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);
+ if(Array.isArray(x)){notes=x}
+ else if(x&&Array.isArray(x.notes)){notes=x.notes;recipes=Array.isArray(x.recipes)?x.recipes:recipes;reminders=Array.isArray(x.reminders)?x.reminders:reminders;if(x.money&&x.money.transactions)moneyData=x.money}
+ else throw 0;
+ persist();persistRecipes();persistReminders();render();toast("تم الاستيراد 📥")}catch{toast("الملف غير صالح 😭")}};r.readAsText(f)}
+$("clearBtn").onclick=()=>{if(confirm("رح تنحذف كل النوتات والمال. متأكد؟")){notes=[];recipes=[];reminders=[];moneyData={transactions:[],customCategories:[]};persist();persistRecipes();persistReminders();persistMoney();render();toast("تم حذف الكل 🗑️")}}
+
+$("lockBtn").onclick=()=>{
+ if(settings.lock){settings.lock=null;saveSettings();applySettings();toast("تم إلغاء القفل 🔓");return}
+ const p=prompt("اختار PIN من 4 إلى 6 أرقام:");
+ if(p&&/^\d{4,6}$/.test(p)){settings.lock=p;saveSettings();applySettings();toast("تم تفعيل القفل 🔒")}else if(p)toast("PIN لازم يكون 4-6 أرقام")
+};
+$("unlockBtn").onclick=unlock;
+$("unlockPin").onkeydown=e=>{if(e.key==="Enter")unlock()};
+function unlock(){
+ if($("unlockPin").value===settings.lock){$("lock").classList.remove("open");$("unlockPin").value="";$("lockError").style.display="none"}
+ else $("lockError").style.display="block";
+}
+
+// ===== MONEY SECTION =====
+let moneyFilter="all", moneyTimeFilter="all", moneySearch="";
+let editingTxn=null, scannerStream=null, receiptImageData=null;
+
+const EXPENSE_CATS=[
+ {id:"shopping",icon:"🛒",ar:"تسوق",en:"Shopping"},
+ {id:"food",icon:"🍔",ar:"طعام",en:"Food"},
+ {id:"transport",icon:"🚕",ar:"مواصلات",en:"Transportation"},
+ {id:"bills",icon:"🧾",ar:"فواتير",en:"Bills"},
+ {id:"school",icon:"📚",ar:"مدرسة",en:"School"},
+ {id:"entertainment",icon:"🎮",ar:"ترفيه",en:"Entertainment"},
+ {id:"health",icon:"💊",ar:"صحة",en:"Health"},
+ {id:"home",icon:"🏠",ar:"منزل",en:"Home"},
+ {id:"subscriptions",icon:"📱",ar:"اشتراكات",en:"Subscriptions"},
+ {id:"other",icon:"📦",ar:"أخرى",en:"Other"}
+];
+function moneyCats(){return [...EXPENSE_CATS, ...(moneyData.customCategories||[])]}
+function catById(id){return moneyCats().find(c=>c.id===id)||EXPENSE_CATS[9]}
+function catLabel(c){return c?(lang==="ar"?c.ar:c.en):""}
+
+const INCOME_SOURCES=[
+ {id:"salary",icon:"💰",ar:"راتب",en:"Salary"},
+ {id:"gift",icon:"🎁",ar:"هدية",en:"Gift"},
+ {id:"work",icon:"💼",ar:"عمل",en:"Work"},
+ {id:"other",icon:"📦",ar:"أخرى",en:"Other"}
+];
+
+const STORE_DB={
+ "migros":{cat:"shopping",name:"Migros"},"bim":{cat:"shopping",name:"BİM"},
+ "a101":{cat:"shopping",name:"A101"},"şok":{cat:"shopping",name:"ŞOK"},"sok":{cat:"shopping",name:"ŞOK"},
+ "carrefour":{cat:"shopping",name:"CarrefourSA"},"getir":{cat:"shopping",name:"Getir"},
+ "trendyol":{cat:"shopping",name:"Trendyol"},"watsons":{cat:"health",name:"Watsons"},
+ "gratis":{cat:"health",name:"Gratis"},"eczane":{cat:"health",name:"Eczane"},
+ "mcdonald":{cat:"food",name:"McDonald's"},"burger king":{cat:"food",name:"Burger King"},
+ "starbucks":{cat:"food",name:"Starbucks"},"domino":{cat:"food",name:"Domino's"},
+ "shell":{cat:"transport",name:"Shell"},"petrol":{cat:"transport",name:"Petrol Ofisi"},
+ "opo":{cat:"transport",name:"OPO"},"ipo":{cat:"transport",name:"İPO"},
+ "tedas":{cat:"bills",name:"TEDAŞ"},"iski":{cat:"bills",name:"İSKİ"},
+ "igdas":{cat:"bills",name:"İGDAŞ"},"turkcell":{cat:"subscriptions",name:"Turkcell"},
+ "vodafone":{cat:"subscriptions",name:"Vodafone"},"turk telekom":{cat:"subscriptions",name:"Türk Telekom"}
+};
+
+function persistMoney(){try{localStorage.setItem(MONEY,JSON.stringify(moneyData))}catch(e){toast("مساحة التخزين ممتلئة 😭")}}
+
+// === RENDER MONEY ===
+function renderMoney(){
+ const c=$("content");c.className="";
+ $("sectionTitle").textContent=tr("money");
+ const txns=moneyData.transactions||[];
+ const income=txns.filter(t=>t.type==="income").reduce((s,t)=>s+(t.amount||0),0);
+ const expense=txns.filter(t=>t.type==="expense").reduce((s,t)=>s+(t.amount||0),0);
+ const balance=income-expense;
+ $("count").textContent=txns.length+" "+tr("operations");
+
+ let html='<div class="moneyDashboard">';
+ // Balance card
+ html+='<div class="moneyBalanceCard">';
+ html+='<div class="moneyBalanceLabel">💰 '+tr("balance")+'</div>';
+ html+='<div class="moneyBalanceAmount '+(balance>=0?"positive":"negative")+'">'+(balance>=0?"+":"")+balance.toLocaleString(lang==="ar"?"ar-TR":"en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+' ₺</div>';
+ html+='</div>';
+ // Stats
+ html+='<div class="moneyStats">';
+ html+='<div class="moneyStat income"><div class="statIcon">📈</div><div class="statValue">'+income.toLocaleString(lang==="ar"?"ar-TR":"en-US",{maximumFractionDigits:0})+' ₺</div><div class="statLabel">'+tr("income")+'</div></div>';
+ html+='<div class="moneyStat expense"><div class="statIcon">💸</div><div class="statValue">'+expense.toLocaleString(lang==="ar"?"ar-TR":"en-US",{maximumFractionDigits:0})+' ₺</div><div class="statLabel">'+tr("expenses")+'</div></div>';
+ html+='<div class="moneyStat"><div class="statIcon">🧾</div><div class="statValue">'+txns.length+'</div><div class="statLabel">'+tr("operations")+'</div></div>';
+ html+='</div>';
+ // Quick actions
+ html+='<div class="moneyQuickActions">';
+ html+='<button class="moneyAction" id="qaExpense"><span class="actionIcon">💸</span><span class="actionLabel">'+tr("addExpense")+'</span></button>';
+ html+='<button class="moneyAction" id="qaIncome"><span class="actionIcon">💰</span><span class="actionLabel">'+tr("addIncome")+'</span></button>';
+ html+='<button class="moneyAction" id="qaScan"><span class="actionIcon">📷</span><span class="actionLabel">'+tr("scanReceipt")+'</span></button>';
+ html+='<button class="moneyAction" id="qaList"><span class="actionIcon">📋</span><span class="actionLabel">'+tr("allTransactions")+'</span></button>';
+ html+='</div>';
+ html+='</div>';
+
+ // Monthly summary
+ html+=renderMonthlySummary();
+
+ // Search + filters + transactions
+ html+='<div class="moneySearchBar"><span>🔍</span><input id="moneySearchInput" placeholder="'+tr("searchMoney")+'..." value="'+esc(moneySearch)+'"></div>';
+ html+='<div class="moneyFilters" id="moneyFilters">';
+ const filters=[["all",tr("allF")],["income",tr("income")],["expense",tr("expenses")],["card",tr("card")],["cash",tr("cash")]];
+ filters.forEach(f=>{html+='<button class="'+(moneyFilter===f[0]?"active":"")+'" data-mfilter="'+f[0]+'">'+f[1]+'</button>'});
+ html+='</div>';
+ html+='<div class="moneyTimeFilters" id="moneyTimeFilters">';
+ const tfilters=[["all",tr("allF")],["today",tr("today")],["week",tr("thisWeek")],["month",tr("thisMonth")]];
+ tfilters.forEach(f=>{html+='<button class="'+(moneyTimeFilter===f[0]?"active":"")+'" data-tfilter="'+f[0]+'">'+f[1]+'</button>'});
+ html+='</div>';
+
+ // Transaction list
+ const filtered=filteredTxns();
+ html+='<div class="txnList">';
+ if(!filtered.length){
+  html+='<div class="txnEmpty"><div class="emoji">💰</div>'+tr("noTransactions")+'</div>';
+ } else {
+  filtered.forEach(t=>{
+   const cat=catById(t.category);
+   const isInc=t.type==="income";
+   const icon=isInc?"💰":(cat?cat.icon:"📦");
+   const dt=t.date?new Date(t.date).toLocaleDateString(lang==="ar"?"ar-TR":"en-US",{day:"numeric",month:"short"}):"";
+   html+='<div class="txnCard" data-tid="'+t.id+'">';
+   html+='<div class="txnIcon">'+icon+'</div>';
+   html+='<div class="txnInfo"><div class="txnName">'+esc(t.name||"")+'</div>';
+   html+='<div class="txnMeta">'+(isInc?tr("income"):catLabel(cat))+' • '+(t.paymentMethod==="card"?"💳 "+tr("card"):"💵 "+tr("cash"))+' • '+dt+'</div></div>';
+   html+='<div class="txnAmount '+(isInc?"income":"expense")+'">'+(isInc?"+":"-")+t.amount.toLocaleString(lang==="ar"?"ar-TR":"en-US",{minimumFractionDigits:2})+' ₺</div>';
+   html+='</div>';
+  });
+ }
+ html+='</div>';
+ c.innerHTML=html;
+
+ // Wire up
+ $("qaExpense").onclick=()=>openExpenseEditor(null);
+ $("qaIncome").onclick=()=>openIncomeEditor(null);
+ $("qaScan").onclick=()=>openScanner();
+ $("qaList").onclick=()=>{moneyFilter="all";moneySearch="";renderMoney()};
+ const msi=$("moneySearchInput");
+ if(msi){msi.oninput=e=>{moneySearch=e.target.value;renderMoney();const ni=$("moneySearchInput");if(ni){ni.focus();ni.setSelectionRange(ni.value.length,ni.value.length)}}}
+ c.querySelectorAll("[data-mfilter]").forEach(b=>b.onclick=()=>{moneyFilter=b.dataset.mfilter;renderMoney()});
+ c.querySelectorAll("[data-tfilter]").forEach(b=>b.onclick=()=>{moneyTimeFilter=b.dataset.tfilter;renderMoney()});
+ c.querySelectorAll("[data-tid]").forEach(card=>card.onclick=()=>openTxnDetail(card.dataset.tid));
+}
+
+function renderMonthlySummary(){
+ const now=new Date();const y=now.getFullYear(),m=now.getMonth();
+ const txns=(moneyData.transactions||[]).filter(t=>{
+  if(!t.date)return false;const d=new Date(t.date);
+  return d.getFullYear()===y&&d.getMonth()===m;
+ });
+ const inc=txns.filter(t=>t.type==="income").reduce((s,t)=>s+(t.amount||0),0);
+ const exp=txns.filter(t=>t.type==="expense").reduce((s,t)=>s+(t.amount||0),0);
+ const bal=inc-exp;
+ const monthName=now.toLocaleDateString(lang==="ar"?"ar-TR":"en-US",{month:"long",year:"numeric"});
+
+ let html='<div class="moneyMonthCard"><div class="moneyMonthTitle">📅 '+monthName+'</div>';
+ html+='<div class="moneyMonthRow income"><span>📈 '+tr("monthlyIncome")+'</span><span>'+inc.toLocaleString(lang==="ar"?"ar-TR":"en-US",{minimumFractionDigits:2})+' ₺</span></div>';
+ html+='<div class="moneyMonthRow expense"><span>💸 '+tr("monthlyExpenses")+'</span><span>'+exp.toLocaleString(lang==="ar"?"ar-TR":"en-US",{minimumFractionDigits:2})+' ₺</span></div>';
+ html+='<div class="moneyMonthRow balance"><span>💰 '+tr("monthlyBalance")+'</span><span>'+bal.toLocaleString(lang==="ar"?"ar-TR":"en-US",{minimumFractionDigits:2})+' ₺</span></div>';
+
+ // Category breakdown
+ const expByCat={};
+ txns.filter(t=>t.type==="expense").forEach(t=>{expByCat[t.category]=(expByCat[t.category]||0)+(t.amount||0)});
+ const totalExp=Object.values(expByCat).reduce((s,v)=>s+v,0);
+ if(totalExp>0){
+  html+='<div class="moneyCatBreak">';
+  Object.entries(expByCat).sort((a,b)=>b[1]-a[1]).forEach(([cid,val])=>{
+   const cat=catById(cid);if(!cat)return;
+   const pct=Math.round(val/totalExp*100);
+   html+='<div class="moneyCatBar"><span class="catIcon">'+cat.icon+'</span><span class="catName">'+catLabel(cat)+'</span><span class="catPct">'+pct+'%</span></div>';
+   html+='<div class="moneyCatProgress"><div class="moneyCatProgressFill" style="width:'+pct+'%;background:'+(cat.dot||'var(--accent)')+'"></div></div>';
+  });
+  html+='</div>';
+ }
+ html+='</div>';
+ return html;
+}
+
+function filteredTxns(){
+ let txns=(moneyData.transactions||[]).slice().sort((a,b)=>new Date(b.date||b.createdAt)-new Date(a.date||a.createdAt));
+ if(moneyFilter==="income")txns=txns.filter(t=>t.type==="income");
+ else if(moneyFilter==="expense")txns=txns.filter(t=>t.type==="expense");
+ else if(moneyFilter==="card")txns=txns.filter(t=>t.paymentMethod==="card");
+ else if(moneyFilter==="cash")txns=txns.filter(t=>t.paymentMethod==="cash");
+ // Time filter
+ if(moneyTimeFilter!=="all"){
+  const now=new Date();
+  txns=txns.filter(t=>{
+   if(!t.date)return false;const d=new Date(t.date);
+   if(moneyTimeFilter==="today")return d.toDateString()===now.toDateString();
+   if(moneyTimeFilter==="week"){const wk=new Date(now);wk.setDate(wk.getDate()-7);return d>=wk}
+   if(moneyTimeFilter==="month")return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+   return true;
+  });
+ }
+ // Search
+ if(moneySearch){
+  const q=moneySearch.toLowerCase();
+  txns=txns.filter(t=>{
+   const cat=catById(t.category);
+   const text=(t.name||" "+t.amount+" "+(cat?catLabel(cat):"")+" "+(t.date||"")).toLowerCase();
+   return text.includes(q);
+  });
+ }
+ return txns;
+}
+
+// === EXPENSE EDITOR ===
+function openExpenseEditor(txn){
+ editingTxn=txn?JSON.parse(JSON.stringify(txn)):{id:uid(),type:"expense",amount:0,name:"",category:"shopping",paymentMethod:"card",date:new Date().toISOString().slice(0,10),note:"",createdAt:Date.now(),isNew:true};
+ $("moneyExpenseTitle").textContent=editingTxn.isNew?(tr("addExpense")):("✏️ "+tr("edit"));
+ $("moneyAmount").value=editingTxn.amount||"";
+ $("moneyName").value=editingTxn.name||"";
+ $("moneyDate").value=editingTxn.date||new Date().toISOString().slice(0,10);
+ $("moneyNote").value=editingTxn.note||"";
+ $("deleteMoneyExpense").style.display=editingTxn.isNew?"none":"grid";
+ buildCatSelector("moneyCatSelector",editingTxn.category);
+ setPaySelector("moneyPaySelector",editingTxn.paymentMethod);
+ wirePaySelectors();
+ $("moneyExpenseOverlay").classList.add("open");
+}
+function closeExpenseEditor(){$("moneyExpenseOverlay").classList.remove("open");editingTxn=null}
+function buildCatSelector(containerId,selectedCat){
+ const c=$(containerId);c.innerHTML="";
+ moneyCats().forEach(cat=>{
+  const b=document.createElement("button");
+  b.className="catOption"+(selectedCat===cat.id?" active":"");
+  b.innerHTML=cat.icon+" "+catLabel(cat);
+  b.onclick=()=>{
+   selectedCat=cat.id;
+   c.querySelectorAll(".catOption").forEach(x=>x.classList.remove("active"));
+   b.classList.add("active");
+  };
+  c.appendChild(b);
+ });
+ // Add custom button
+ const addBtn=document.createElement("button");
+ addBtn.className="catAddCustom";
+ addBtn.textContent="＋ "+tr("customCat");
+ addBtn.onclick=()=>{
+  const name=prompt(lang==="ar"?"اسم التصنيف الجديد:":"New category name:");
+  if(name&&name.trim()){
+   const id="custom_"+Date.now().toString(36);
+   moneyData.customCategories=moneyData.customCategories||[];
+   moneyData.customCategories.push({id,icon:"🏷️",ar:name.trim(),en:name.trim()});
+   persistMoney();
+   buildCatSelector(containerId,id);
+  }
+ };
+ c.appendChild(addBtn);
+ // Return current selection via closure - we need a different approach
+ c.dataset.selected=selectedCat;
+}
+function getCatSelectorValue(containerId){return $(containerId).dataset.selected||"other"}
+function setPaySelector(containerId,method){
+ const c=$(containerId);
+ c.querySelectorAll(".payOption").forEach(o=>o.classList.toggle("active",o.dataset.pay===method));
+ c.dataset.selected=method;
+}
+function getPaySelectorValue(containerId){return $(containerId).dataset.selected||"card"}
+
+// Wire payment selectors
+["moneyPaySelector","incomePaySelector"].forEach(sid=>{
+ document.addEventListener("DOMContentLoaded",()=>{});
+});
+function wirePaySelectors(){
+ document.querySelectorAll(".paySelector").forEach(ps=>{
+  ps.querySelectorAll(".payOption").forEach(o=>{
+   o.onclick=()=>{
+    ps.querySelectorAll(".payOption").forEach(x=>x.classList.remove("active"));
+    o.classList.add("active");
+    ps.dataset.selected=o.dataset.pay;
+   };
+  });
+ });
+}
+
+$("closeMoneyExpense").onclick=closeExpenseEditor;
+$("moneyExpenseOverlay").onclick=e=>{if(e.target.id==="moneyExpenseOverlay")closeExpenseEditor()};
+$("saveMoneyExpense").onclick=()=>{
+ const amt=parseFloat($("moneyAmount").value.replace(/[^\d.,]/g,"").replace(/\./g,"").replace(",","."));
+ if(!amt||amt<=0){toast(tr("enterAmount"));return}
+ const name=$("moneyName").value.trim()||tr("expense");
+ editingTxn.amount=amt;editingTxn.name=name;
+ editingTxn.category=getCatSelectorValue("moneyCatSelector");
+ editingTxn.paymentMethod=getPaySelectorValue("moneyPaySelector");
+ editingTxn.date=$("moneyDate").value||new Date().toISOString().slice(0,10);
+ editingTxn.note=$("moneyNote").value.trim();
+ editingTxn.updatedAt=Date.now();
+ const i=moneyData.transactions.findIndex(t=>t.id===editingTxn.id);
+ if(i>=0)moneyData.transactions[i]=editingTxn;else moneyData.transactions.unshift(editingTxn);
+ persistMoney();closeExpenseEditor();renderMoney();toast(tr("saved")+" ✅");
+};
+$("deleteMoneyExpense").onclick=()=>{
+ if(confirm(tr("confirmDelete"))){
+  moneyData.transactions=moneyData.transactions.filter(t=>t.id!==editingTxn.id);
+  persistMoney();closeExpenseEditor();renderMoney();toast(tr("deleted")+" 🗑️");
+ }
+};
+
+// === INCOME EDITOR ===
+function openIncomeEditor(txn){
+ editingTxn=txn?JSON.parse(JSON.stringify(txn)):{id:uid(),type:"income",amount:0,name:"",category:"salary",paymentMethod:"card",date:new Date().toISOString().slice(0,10),note:"",createdAt:Date.now(),isNew:true};
+ $("moneyIncomeTitle").textContent=editingTxn.isNew?tr("addIncome"):("✏️ "+tr("edit"));
+ $("incomeAmount").value=editingTxn.amount||"";
+ $("incomeSource").value=editingTxn.name||"";
+ $("incomeDate").value=editingTxn.date||new Date().toISOString().slice(0,10);
+ $("incomeNote").value=editingTxn.note||"";
+ $("deleteMoneyIncome").style.display=editingTxn.isNew?"none":"grid";
+ setPaySelector("incomePaySelector",editingTxn.paymentMethod);
+ wirePaySelectors();
+ $("moneyIncomeOverlay").classList.add("open");
+}
+function closeIncomeEditor(){$("moneyIncomeOverlay").classList.remove("open");editingTxn=null}
+$("closeMoneyIncome").onclick=closeIncomeEditor;
+$("moneyIncomeOverlay").onclick=e=>{if(e.target.id==="moneyIncomeOverlay")closeIncomeEditor()};
+$("saveMoneyIncome").onclick=()=>{
+ const amt=parseFloat($("incomeAmount").value.replace(/[^\d.,]/g,"").replace(/\./g,"").replace(",","."));
+ if(!amt||amt<=0){toast(tr("enterAmount"));return}
+ editingTxn.amount=amt;
+ editingTxn.name=$("incomeSource").value.trim()||tr("income");
+ editingTxn.paymentMethod=getPaySelectorValue("incomePaySelector");
+ editingTxn.date=$("incomeDate").value||new Date().toISOString().slice(0,10);
+ editingTxn.note=$("incomeNote").value.trim();
+ editingTxn.updatedAt=Date.now();
+ const i=moneyData.transactions.findIndex(t=>t.id===editingTxn.id);
+ if(i>=0)moneyData.transactions[i]=editingTxn;else moneyData.transactions.unshift(editingTxn);
+ persistMoney();closeIncomeEditor();renderMoney();toast(tr("saved")+" ✅");
+};
+$("deleteMoneyIncome").onclick=()=>{
+ if(confirm(tr("confirmDelete"))){
+  moneyData.transactions=moneyData.transactions.filter(t=>t.id!==editingTxn.id);
+  persistMoney();closeIncomeEditor();renderMoney();toast(tr("deleted")+" 🗑️");
+ }
+};
+
+// === TRANSACTION DETAIL ===
+function openTxnDetail(id){
+ const t=moneyData.transactions.find(x=>x.id===id);if(!t)return;
+ editingTxn=JSON.parse(JSON.stringify(t));
+ const cat=catById(t.category);const isInc=t.type==="income";
+ const dt=t.date?new Date(t.date).toLocaleDateString(lang==="ar"?"ar-TR":"en-US",{dateStyle:"full"}):"—";
+ let html='<div style="text-align:center;padding:10px 0">';
+ html+='<div style="font-size:48px;margin-bottom:8px">'+(isInc?"💰":(cat?cat.icon:"📦"))+'</div>';
+ html+='<div style="font-size:22px;font-weight:800;margin-bottom:4px">'+(isInc?"+":"-")+t.amount.toLocaleString(lang==="ar"?"ar-TR":"en-US",{minimumFractionDigits:2})+' ₺</div>';
+ html+='<div style="color:var(--muted);font-size:14px">'+esc(t.name||"")+'</div>';
+ html+='</div><div style="margin-top:14px">';
+ html+='<div class="moneyMonthRow"><span>📋 '+(isInc?tr("income"):tr("expenses"))+'</span><span>'+(isInc?"💰":catLabel(cat))+'</span></div>';
+ html+='<div class="moneyMonthRow"><span>'+(t.paymentMethod==="card"?"💳 "+tr("card"):"💵 "+tr("cash"))+'</span><span>—</span></div>';
+ html+='<div class="moneyMonthRow"><span>📅 '+tr("date")+'</span><span>'+dt+'</span></div>';
+ if(t.note)html+='<div class="moneyMonthRow"><span>📝 '+tr("note")+'</span><span>'+esc(t.note)+'</span></div>';
+ if(t.receiptThumb)html+='<div style="margin-top:10px"><img src="'+t.receiptThumb+'" style="width:100%;border-radius:12px"></div>';
+ html+='</div>';
+ $("txnDetailContent").innerHTML=html;
+ $("txnDetailOverlay").classList.add("open");
+}
+$("closeTxnDetail").onclick=()=>$("txnDetailOverlay").classList.remove("open");
+$("txnDetailOverlay").onclick=e=>{if(e.target.id==="txnDetailOverlay")$("txnDetailOverlay").classList.remove("open")};
+$("deleteTxnDetail").onclick=()=>{
+ if(confirm(tr("confirmDelete"))){
+  moneyData.transactions=moneyData.transactions.filter(t=>t.id!==editingTxn.id);
+  persistMoney();$("txnDetailOverlay").classList.remove("open");renderMoney();toast(tr("deleted")+" 🗑️");
+ }
+};
+$("editTxnDetail").onclick=()=>{
+ $("txnDetailOverlay").classList.remove("open");
+ if(editingTxn.type==="income")openIncomeEditor(editingTxn);
+ else openExpenseEditor(editingTxn);
+};
+
+// === QUICK ACTIONS (FAB) ===
+function openMoneyQuickActions(){
+ const c=$("moneyQuickList");c.innerHTML="";
+ const actions=[
+  {icon:"💸",label:tr("addExpense"),fn:()=>openExpenseEditor(null)},
+  {icon:"💰",label:tr("addIncome"),fn:()=>openIncomeEditor(null)},
+  {icon:"📷",label:tr("scanReceipt"),fn:()=>openScanner()},
+ ];
+ actions.forEach(a=>{
+  const b=document.createElement("button");
+  b.className="quickActionRow";
+  b.innerHTML='<div class="qaIcon">'+a.icon+'</div><div class="qaLabel">'+a.label+'</div>';
+  b.onclick=()=>$("moneyQuickOverlay").classList.remove("open")||a.fn();
+  c.appendChild(b);
+ });
+ $("moneyQuickOverlay").classList.add("open");
+}
+$("closeMoneyQuick").onclick=()=>$("moneyQuickOverlay").classList.remove("open");
+$("moneyQuickOverlay").onclick=e=>{if(e.target.id==="moneyQuickOverlay")$("moneyQuickOverlay").classList.remove("open")};
+
+// === RECEIPT SCANNER ===
+function openScanner(){
+ // Check if camera is available
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+  // No camera API - go straight to file upload
+  $("receiptFileInput").click();
+  return;
+ }
+ $("scannerOverlay").classList.add("open");
+ startCamera();
+}
+async function startCamera(facing){
+ try{
+  if(scannerStream)scannerStream.getTracks().forEach(t=>t.stop());
+  scannerStream=await navigator.mediaDevices.getUserMedia({
+   video:{facingMode:facing||"environment",width:{ideal:1920},height:{ideal:1080}},
+   audio:false
+  });
+  const v=$("scannerVideo");
+  v.srcObject=scannerStream;
+  await v.play();
+  // Check for torch support
+  const track=scannerStream.getVideoTracks()[0];
+  if(track.getCapabilities&&track.getCapabilities().torch)$("scannerFlash").style.display="grid";
+  if(track.getCapabilities&&track.getCapabilities().facingMode&&track.getCapabilities().facingMode.length>1)$("scannerSwitch").style.display="grid";
+ }catch(e){
+  // Camera failed - show gallery option
+  toast(tr("cameraError"));
+  setTimeout(()=>{$("scannerOverlay").classList.remove("open");$("receiptFileInput").click()},800);
+ }
+}
+function stopCamera(){
+ if(scannerStream){scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null}
+ $("scannerOverlay").classList.remove("open");
+ $("scannerFlash").style.display="none";
+ $("scannerSwitch").style.display="none";
+}
+$("closeScanner").onclick=stopCamera;
+$("scannerSwitch").onclick=()=>{
+ const track=scannerStream&&scannerStream.getVideoTracks()[0];
+ if(!track)return;
+ const settings=track.getSettings();
+ startCamera(settings.facingMode==="environment"?"user":"environment");
+};
+$("scannerFlash").onclick=()=>{
+ const track=scannerStream&&scannerStream.getVideoTracks()[0];
+ if(!track||!track.getCapabilities||!track.getCapabilities().torch)return;
+ track.applyConstraints({advanced:[{torch:!track.getSettings().torch}]});
+};
+$("scannerCapture").onclick=()=>{
+ const v=$("scannerVideo");
+ if(!v.videoWidth){toast("Camera not ready 😭");return}
+ const canvas=document.createElement("canvas");
+ canvas.width=v.videoWidth;canvas.height=v.videoHeight;
+ canvas.getContext("2d").drawImage(v,0,0);
+ stopCamera();
+ processReceipt(canvas);
+};
+$("scannerGallery").onclick=()=>{$("receiptFileInput").click()};
+$("scannerSkip").onclick=()=>{stopCamera();openExpenseEditor(null)};
+$("receiptFileInput").onchange=e=>{
+ const f=e.target.files[0];if(!f)return;
+ const reader=new FileReader();
+ reader.onload=()=>{
+  const img=new Image();
+  img.onload=()=>{
+   const canvas=document.createElement("canvas");
+   canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+   canvas.getContext("2d").drawImage(img,0,0);
+   processReceipt(canvas);
+  };
+  img.src=reader.result;
+ };
+ reader.readAsDataURL(f);
+ e.target.value="";
+};
+
+// === IMAGE PROCESSING ===
+function processReceipt(sourceCanvas){
+ $("scannerLoading").classList.add("open");
+ // Store original
+ receiptImageData=sourceCanvas;
+ // Best-effort image enhancement
+ const canvas=document.createElement("canvas");
+ const maxW=1600;const scale=Math.min(1,maxW/sourceCanvas.width);
+ canvas.width=sourceCanvas.width*scale;canvas.height=sourceCanvas.height*scale;
+ const ctx=canvas.getContext("2d");
+ ctx.drawImage(sourceCanvas,0,0,canvas.width,canvas.height);
+ // Auto-crop
+ const cropped=autoCropCanvas(canvas);
+ // Grayscale + contrast
+ enhanceForOCR(cropped);
+ // Run OCR
+ runOCR(cropped);
+}
+
+function autoCropCanvas(canvas){
+ const ctx=canvas.getContext("2d");
+ const{width,height}=canvas;
+ if(width<10||height<10)return canvas;
+ let imageData;
+ try{imageData=ctx.getImageData(0,0,width,height)}catch(e){return canvas}
+ const data=imageData.data;
+ let minX=width,minY=height,maxX=0,maxY=0;
+ const step=Math.max(1,Math.floor(Math.min(width,height)/200));
+ for(let y=0;y<height;y+=step){
+  for(let x=0;x<width;x+=step){
+   const i=(y*width+x)*4;
+   const brightness=(data[i]+data[i+1]+data[i+2])/3;
+   if(brightness<200){if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y}
+  }
+ }
+ const pad=15;
+ minX=Math.max(0,minX-pad);minY=Math.max(0,minY-pad);
+ maxX=Math.min(width,maxX+pad);maxY=Math.min(height,maxY+pad);
+ if(maxX<=minX||maxY<=minY)return canvas;
+ const c=document.createElement("canvas");
+ c.width=maxX-minX;c.height=maxY-minY;
+ c.getContext("2d").drawImage(canvas,minX,minY,maxX-minX,maxY-minY,0,0,maxX-minX,maxY-minY);
+ return c;
+}
+
+function enhanceForOCR(canvas){
+ const ctx=canvas.getContext("2d");
+ const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+ const data=imageData.data;
+ const contrast=1.4,brightness=15;
+ for(let i=0;i<data.length;i+=4){
+  const gray=0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
+  let v=(gray-128)*contrast+128+brightness;
+  v=Math.max(0,Math.min(255,v));
+  data[i]=v;data[i+1]=v;data[i+2]=v;
+ }
+ ctx.putImageData(imageData,0,0);
+ // Simple sharpen (3x3 convolution)
+ const sCtx=canvas.getContext("2d");
+ const src=sCtx.getImageData(0,0,canvas.width,canvas.height);
+ const dst=sCtx.createImageData(canvas.width,canvas.height);
+ const w=canvas.width,h=canvas.height;
+ const kernel=[0,-1,0,-1,5,-1,0,-1,0];
+ for(let y=1;y<h-1;y++){
+  for(let x=1;x<w-1;x++){
+   for(let ch=0;ch<3;ch++){
+    let sum=0;
+    for(let ky=-1;ky<=1;ky++)for(let kx=-1;kx<=1;kx++){
+     const idx=((y+ky)*w+(x+kx))*4+ch;
+     sum+=src.data[idx]*kernel[(ky+1)*3+(kx+1)];
+    }
+    dst.data[(y*w+x)*4+ch]=Math.max(0,Math.min(255,sum));
+   }
+  dst.data[(y*w+x)*4+3]=255;
+  }
+ }
+ sCtx.putImageData(dst,0,0);
+}
+
+// === OCR ===
+function loadTesseract(callback){
+ if(window.Tesseract){callback();return}
+ const s=document.createElement("script");
+ s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+ s.onload=()=>callback();
+ s.onerror=()=>{$("scannerLoading").classList.remove("open");toast(tr("ocrError"));openExpenseEditor(null)};
+ document.head.appendChild(s);
+}
+
+async function runOCR(canvas){
+ $("scannerProgress").textContent=tr("processing");
+ loadTesseract(async()=>{
+  try{
+   const dataUrl=canvas.toDataURL("image/jpeg",0.8);
+   const result=await Tesseract.recognize(dataUrl,"tur+eng",{
+    logger:m=>{if(m.status==="recognizing text"){$("scannerProgress").textContent=tr("ocr")+" "+Math.round(m.progress*100)+"%"}}
+   });
+   const text=result.data.text||"";
+   $("scannerLoading").classList.remove("open");
+   const parsed=parseReceipt(text);
+   openReceiptReview(parsed,dataUrl);
+  }catch(e){
+   $("scannerLoading").classList.remove("open");
+   toast(tr("ocrError"));
+   // Fall back to manual entry
+   openExpenseEditor(null);
+  }
+ });
+}
+
+// === RECEIPT PARSING ===
+function parseReceipt(text){
+ const lines=text.split("\n").map(l=>l.trim()).filter(l=>l.length>0);
+ const result={
+  store:"",storeConf:"low",
+  total:null,totalConf:"low",currency:"TL",
+  date:"",time:"",dateConf:"low",
+  paymentMethod:"",paymentConf:"low",
+  tax:null,receiptNumber:"",
+  rawText:text,items:[]
+ };
+ if(!lines.length)return result;
+ result.store=detectStore(lines,result);
+ result.total=detectTotal(lines,result);
+ result.tax=detectTax(lines);
+ result.date=detectDate(lines,result);
+ result.time=detectTime(lines);
+ result.paymentMethod=detectPayment(lines,result);
+ return result;
+}
+
+function detectStore(lines,result){
+ const knownStores=Object.keys(STORE_DB);
+ for(let i=0;i<Math.min(lines.length,8);i++){
+  const lower=lines[i].toLowerCase();
+  for(const key of knownStores){
+   if(lower.includes(key)){
+    result.storeConf="high";
+    return STORE_DB[key].name;
+   }
+  }
+ }
+ // Use first meaningful line
+ for(let i=0;i<Math.min(lines.length,5);i++){
+  const l=lines[i].trim();
+  if(l.length>=3&&l.length<=40&&!/^\d+$/.test(l)&&!/[°•|]/.test(l)){
+   result.storeConf="medium";
+   return l;
+  }
+ }
+ result.storeConf="low";
+ return lines[0]||"";
+}
+
+function detectTotal(lines,result){
+ const keywords=[
+  {kw:"GENEL TOPLAM",pri:5},{kw:"GRAND TOTAL",pri:5},
+  {kw:"TOPLAM TUTAR",pri:4},{kw:"ÖDENECEK",pri:4},{kw:"PAYABLE",pri:4},
+  {kw:"TOPLAM",pri:3},{kw:"TOTAL",pri:3},
+  {kw:"ARA TOPLAM",pri:1},{kw:"SUBTOTAL",pri:1}
+ ];
+ const avoid=["KDV","VAT","VERGİ","TAX","K.D.V"];
+ let best=null,bestPri=-1;
+ for(let i=lines.length-1;i>=0;i--){
+  const upper=lines[i].toUpperCase();
+  // Skip lines with VAT/tax
+  if(avoid.some(a=>upper.includes(a)))continue;
+  for(const {kw,pri} of keywords){
+   if(upper.includes(kw)){
+    const amt=extractAmount(lines[i]);
+    if(amt!==null&&amt>0&&pri>bestPri){
+     best=amt;bestPri=pri;
+     // Check if currency is nearby
+     if(/TL|TRY|₺/i.test(lines[i]))result.currency="TL";
+    }
+   }
+  }
+ }
+ if(best!==null){
+  result.totalConf=bestPri>=4?"high":bestPri>=3?"medium":"low";
+  return best;
+ }
+ // Fallback: look for currency-marked amounts in bottom third
+ const start=Math.floor(lines.length*0.6);
+ for(let i=start;i<lines.length;i++){
+  if(/TL|TRY|₺/i.test(lines[i])){
+   const amt=extractAmount(lines[i]);
+   if(amt!==null&&amt>0){result.totalConf="low";return amt}
+  }
+ }
+ return null;
+}
+
+function detectTax(lines){
+ const keywords=["KDV","VAT","VERGİ","TAX","K.D.V"];
+ for(let i=lines.length-1;i>=0;i--){
+  const upper=lines[i].toUpperCase();
+  if(keywords.some(k=>upper.includes(k))){
+   // Look for percentage or amount
+   const pctMatch=lines[i].match(/%(\d+)/);
+   if(pctMatch)return{type:"percent",value:parseInt(pctMatch[1])};
+   const amt=extractAmount(lines[i]);
+   if(amt!==null)return{type:"amount",value:amt};
+  }
+ }
+ return null;
+}
+
+function detectDate(lines,result){
+ const months=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC",
+  "OCA","ŞUB","MAR","NİS","MAY","HAZ","TEM","AĞU","EYL","EKİ","KAS","ARA"];
+ for(const line of lines){
+  // DD.MM.YYYY or DD/MM/YYYY
+  let m=line.match(/(\d{1,2})[./](\d{1,2})[./](\d{2,4})/);
+  if(m){
+   let[y,mo,d]=[m[3],m[2],m[1]];
+   if(y.length===2)y="20"+y;
+   result.dateConf="high";
+   return y+"-"+mo.padStart(2,"0")+"-"+d.padStart(2,"0");
+  }
+  // YYYY-MM-DD
+  m=line.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(m){result.dateConf="high";return m[0]}
+ }
+ // Default to today
+ result.dateConf="low";
+ return new Date().toISOString().slice(0,10);
+}
+
+function detectTime(lines){
+ for(const line of lines){
+  const m=line.match(/\b(\d{1,2}):(\d{2})(?::(\d{2}))?\b/);
+  if(m)return m[0];
+ }
+ return"";
+}
+
+function detectPayment(lines,result){
+ const cardKw=["CARD","CREDIT","BANK","VISA","MASTERCARD","MAESTRO","POS","KART","KREDİ"];
+ const cashKw=["NAKIT","NAKİT","CASH","PEŞİN","PETÇEK"];
+ for(const line of lines){
+  const upper=line.toUpperCase();
+  if(cardKw.some(k=>upper.includes(k))){result.paymentConf="high";return"card"}
+  if(cashKw.some(k=>upper.includes(k))){result.paymentConf="high";return"cash"}
+ }
+ result.paymentConf="low";
+ return"";
+}
+
+function extractAmount(str){
+ // Remove currency symbols
+ let s=str.replace(/[₺]|TRY|TL/gi,"").trim();
+ // Find number pattern
+ // Turkish: 1.234,56 | English: 1,234.56 | Simple: 123,45 or 123.45
+ const m=s.match(/(\d{1,3}(?:[.,]\d{3})*[.,]\d{2}|\d+[.,]\d{2}|\d{4,})/);
+ if(!m)return null;
+ let numStr=m[0];
+ if(numStr.includes(".")&&numStr.includes(",")){
+  if(numStr.lastIndexOf(".")>numStr.lastIndexOf(",")){
+   numStr=numStr.replace(/,/g,""); // English
+  }else{
+   numStr=numStr.replace(/\./g,"").replace(",","."); // Turkish
+  }
+ }else if(numStr.includes(",")){
+  const parts=numStr.split(",");
+  if(parts[1]&&parts[1].length<=2)numStr=numStr.replace(",",".");
+  else numStr=numStr.replace(/,/g,"");
+ }else if(numStr.includes(".")){
+  const parts=numStr.split(".");
+  if(parts.length>2||(parts.length===2&&parts[1].length===3))numStr=numStr.replace(/\./g,"");
+ }
+ const val=parseFloat(numStr);
+ return isNaN(val)?null:val;
+}
+
+function detectCategoryFromStore(storeName){
+ if(!storeName)return"other";
+ const lower=storeName.toLowerCase();
+ for(const key of Object.keys(STORE_DB)){
+  if(lower.includes(key))return STORE_DB[key].cat;
+ }
+ return"other";
+}
+
+// === RECEIPT REVIEW ===
+function openReceiptReview(data,receiptImg){
+ const c=$("receiptReviewContent");
+ const detectedCat=detectCategoryFromStore(data.store);
+ let html="";
+ if(receiptImg)html+='<img class="receiptReviewImg" src="'+receiptImg+'">';
+ // Store
+ html+='<div class="reviewField"><label>🏪 '+tr("store")+' <span class="confidenceBadge '+data.storeConf+'">'+tr(data.storeConf)+'</span></label><input id="rvStore" value="'+esc(data.store||"")+'"></div>';
+ // Amount
+ html+='<div class="reviewField"><label>💰 '+tr("amount")+' <span class="confidenceBadge '+data.totalConf+'">'+tr(data.totalConf)+'</span></label><input id="rvAmount" type="text" inputmode="decimal" value="'+(data.total||"")+'"></div>';
+ // Category
+ html+='<div class="reviewField"><label>📋 '+tr("category")+'</label><select id="rvCategory">';
+ moneyCats().forEach(cat=>{
+  html+='<option value="'+cat.id+'"'+(cat.id===detectedCat?" selected":"")+'>'+cat.icon+" "+catLabel(cat)+'</option>';
+ });
+ html+='</select></div>';
+ // Payment
+ html+='<div class="reviewField"><label>'+(tr("paymentMethod"))+' <span class="confidenceBadge '+data.paymentConf+'">'+tr(data.paymentConf)+'</span></label><select id="rvPayment">';
+ html+='<option value="card"'+(data.paymentMethod==="card"?" selected":"")+'>💳 '+tr("card")+'</option>';
+ html+='<option value="cash"'+(data.paymentMethod==="cash"?" selected":"")+'>💵 '+tr("cash")+'</option>';
+ html+='<option value=""'+(!data.paymentMethod?" selected":"")+'>— '+tr("selectPay")+' —</option>';
+ html+='</select></div>';
+ // Date
+ html+='<div class="reviewField"><label>📅 '+tr("date")+' <span class="confidenceBadge '+data.dateConf+'">'+tr(data.dateConf)+'</span></label><input id="rvDate" type="date" value="'+(data.date||new Date().toISOString().slice(0,10))+'"></div>';
+ // Time
+ if(data.time)html+='<div class="reviewField"><label>🕐 '+tr("time")+'</label><input id="rvTime" value="'+esc(data.time)+'" readonly></div>';
+ // Tax
+ if(data.tax){
+  const taxText=data.tax.type==="percent"?("%"+data.tax.value):(data.tax.value+" ₺");
+  html+='<div class="reviewField"><label>🧾 '+tr("tax")+'</label><input id="rvTax" value="'+taxText+'" readonly></div>';
+ }
+ // Receipt number
+ if(data.receiptNumber)html+='<div class="reviewField"><label># '+tr("receiptNumber")+'</label><input value="'+esc(data.receiptNumber)+'" readonly></div>';
+ // Actions
+ html+='<div class="reviewActions">';
+ html+='<button class="saveBtn" id="rvSave">💾 '+tr("save")+'</button>';
+ html+='<button class="editBtn" id="rvEdit">✏️ '+tr("edit")+'</button>';
+ html+='<button class="rescanBtn" id="rvRescan">🔄 '+tr("scanAgain")+'</button>';
+ html+='<button class="cancelBtn" id="rvCancel">❌ '+tr("cancel")+'</button>';
+ html+='</div>';
+ c.innerHTML=html;
+ $("receiptReviewOverlay").classList.add("open");
+
+ $("rvSave").onclick=async()=>{
+  const amt=parseFloat(($("rvAmount").value||"").replace(/[^\d.,]/g,"").replace(/\./g,"").replace(",","."));
+  if(!amt||amt<=0){toast(tr("enterAmount"));return}
+  const pay=$("rvPayment").value||"card";
+  const txn={
+   id:uid(),type:"expense",amount:amt,
+   name:$("rvStore").value.trim()||tr("expense"),
+   category:$("rvCategory").value,
+   paymentMethod:pay,
+   date:$("rvDate").value||new Date().toISOString().slice(0,10),
+   note:"",createdAt:Date.now(),updatedAt:Date.now()
+  };
+  // Try to save compressed receipt thumbnail
+  if(receiptImg){
+   try{
+    const thumb=await compressReceipt(receiptImg);
+    if(thumb)txn.receiptThumb=thumb;
+   }catch(e){}
+  }
+  moneyData.transactions.unshift(txn);
+  persistMoney();
+  $("receiptReviewOverlay").classList.remove("open");
+  renderMoney();
+  toast(tr("saved")+" ✅");
+ };
+ $("rvEdit").onclick=()=>{
+  // Pre-fill expense editor with detected data
+  const amt=parseFloat(($("rvAmount").value||"").replace(/[^\d.,]/g,"").replace(/\./g,"").replace(",","."))||0;
+  $("receiptReviewOverlay").classList.remove("open");
+  openExpenseEditor({
+   id:uid(),type:"expense",amount:amt,
+   name:$("rvStore").value.trim(),
+   category:$("rvCategory").value,
+   paymentMethod:$("rvPayment").value||"card",
+   date:$("rvDate").value||new Date().toISOString().slice(0,10),
+   note:"",createdAt:Date.now(),isNew:true
+  });
+ };
+ $("rvRescan").onclick=()=>{
+  $("receiptReviewOverlay").classList.remove("open");
+  openScanner();
+ };
+ $("rvCancel").onclick=()=>{
+  $("receiptReviewOverlay").classList.remove("open");
+ };
+}
+
+function compressReceipt(dataUrl){
+ // Resize to max 1000px wide JPEG at 0.6 quality
+ return new Promise((resolve)=>{
+  const img=new Image();
+  img.onload=()=>{
+   const maxW=1000;const scale=Math.min(1,maxW/img.naturalWidth);
+   const canvas=document.createElement("canvas");
+   canvas.width=img.naturalWidth*scale;canvas.height=img.naturalHeight*scale;
+   canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+   resolve(canvas.toDataURL("image/jpeg",0.6));
+  };
+  img.onerror=()=>resolve(null);
+  img.src=dataUrl;
+ });
+}
+
+// Override save to handle async compressReceipt
+// We need to handle this differently since compressReceipt is async
+// Let's make rvSave async-friendly
+$("receiptReviewOverlay"); // ensure element exists
+// We'll patch rvSave to be async by re-attaching after content is set
+
+// === MONEY LANGUAGE ===
+// Money translations are added to T object in the main code
+
+load();
+$("viewBtn").textContent="☷";render();
+if(settings.lock)$("lock").classList.add("open");
+
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js"));
+</script>
+</body></html>
