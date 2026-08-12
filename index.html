@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F7D957">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="znotes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>znotes</title>
+<style>
+:root{
+  --bg:#0f1012;--panel:#17191d;--panel2:#202329;--text:#f4f4f2;
+  --muted:#a9adb6;--accent:#F7D957;--danger:#ff6b6b;--line:rgba(255,255,255,.10)
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;width:100%;min-height:100%;background:var(--bg);color:var(--text)}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;overflow-x:hidden}
+button,input,textarea,select{font:inherit}button{border:0}
+.app{min-height:100svh;padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+header{
+  position:sticky;top:0;z-index:10;
+  background:rgba(15,16,18,.97);backdrop-filter:blur(18px);
+  padding:calc(6px + env(safe-area-inset-top)) 14px 8px;
+  border-bottom:1px solid var(--line)
+}
+.top{height:43px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:7px}
+.brand img{width:36px;height:36px;border-radius:10px;object-fit:cover}
+.brand h1{margin:0;font-size:23px;line-height:1;font-weight:750;letter-spacing:-.6px}
+.iconbtn{width:36px;height:36px;display:grid;place-items:center;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:11px}
+.search{
+  height:45px;margin-top:6px;display:flex;align-items:center;gap:7px;
+  background:var(--panel);border:1px solid var(--line);padding:0 12px;border-radius:13px
+}
+.search span{font-size:21px;line-height:1;transform:rotate(-20deg)}
+.search input{background:none;border:0;outline:0;color:var(--text);width:100%;font-size:15px;text-align:right}
+.tabs{
+  display:flex;gap:6px;overflow:hidden;padding:8px 14px 0;
+  direction:rtl
+}
+.tabs button{
+  flex:1 1 0;min-width:0;height:42px;padding:0 5px;border-radius:22px;
+  background:var(--panel);color:#c7c9ce;border:1px solid var(--line);
+  font-size:13px;white-space:nowrap
+}
+.tabs button.active{background:var(--accent);color:#151515;border-color:transparent;font-weight:800}
+main{padding:9px 14px 0}
+.sectiontitle{display:flex;align-items:center;justify-content:space-between;margin:1px 0}
+.sectiontitle h2{font-size:19px;margin:0;font-weight:800}
+.sectiontitle span{font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}
+.grid.list{display:flex;flex-direction:column}
+.card{position:relative;border-radius:14px;padding:12px;min-height:115px;cursor:pointer;overflow:hidden}
+.card .pin{position:absolute;top:8px;left:8px;font-size:12px}
+.card h3{margin:0 0 5px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card p{margin:0;opacity:.82;line-height:1.4;font-size:12px;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.meta{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-top:7px;font-size:9px;opacity:.75}
+.tag{padding:3px 6px;border-radius:999px;background:rgba(255,255,255,.13)}
+.taskrow{display:flex;gap:9px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line)}
+.taskrow input{width:19px;height:19px;accent-color:var(--accent)}
+.taskrow.done .tasktext{text-decoration:line-through;opacity:.45}
+.empty{text-align:center;padding:62px 15px 20px;color:var(--muted);grid-column:1/-1}
+.empty .emoji{font-size:44px;margin-bottom:7px}
+.fab{
+  position:fixed;right:16px;
+  bottom:calc(80px + env(safe-area-inset-bottom));
+  width:55px;height:55px;border-radius:50%;
+  background:var(--accent);color:#111;box-shadow:0 8px 24px rgba(0,0,0,.38);
+  z-index:30;font-size:29px;font-weight:300;display:grid;place-items:center
+}
+.bottomnav{
+  position:fixed;left:0;right:0;bottom:0;
+  height:calc(72px + env(safe-area-inset-bottom));
+  padding:2px 2px env(safe-area-inset-bottom);
+  background:rgba(23,25,29,.98);backdrop-filter:blur(18px);
+  border-top:1px solid var(--line);z-index:25;
+  display:flex;justify-content:space-around;align-items:flex-start
+}
+.bottomnav button{
+  width:25%;height:70px;padding:2px 0 0;background:none;color:#aeb1b7;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;font-size:12px;line-height:1.1
+}
+.bottomnav button.active{color:var(--accent)}
+.bottomnav button:first-letter{font-size:19px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:none;align-items:flex-end}
+.overlay.open{display:flex}
+.sheet{
+  width:100%;max-height:90svh;overflow:auto;background:var(--panel);
+  border-radius:21px 21px 0 0;padding:9px 15px calc(18px + env(safe-area-inset-bottom))
+}
+.handle{width:40px;height:4px;border-radius:99px;background:#777;margin:0 auto 11px;opacity:.45}
+.sheethead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sheethead h2{margin:0;font-size:18px}.actions{display:flex;gap:7px}
+.field{margin-top:11px}.field label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}
+.field input,.field textarea,.field select{
+  width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:11px;padding:10px;outline:0
+}
+.field textarea{min-height:145px;resize:vertical;line-height:1.55}
+.row{display:flex;gap:7px}.row>*{flex:1}.colors{display:flex;gap:8px;flex-wrap:wrap}
+.color{width:28px;height:28px;border-radius:50%;border:2px solid transparent}
+.color.sel{border-color:#fff;box-shadow:0 0 0 2px #222}
+.checkline{display:flex;align-items:center;gap:8px;margin-top:9px}
+.checkline input{width:18px;height:18px;accent-color:var(--accent)}
+.primary{width:100%;margin-top:14px;padding:11px;border-radius:11px;background:var(--accent);color:#111;font-weight:800}
+.danger{color:var(--danger)!important}
+.settingsList{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+.settingbtn{padding:11px;text-align:right;display:flex;justify-content:space-between;align-items:center;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px}
+.toast{
+  position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));
+  transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
+  background:#fff;color:#111;padding:8px 13px;border-radius:999px;z-index:100;transition:.2s;font-size:12px
+}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.lock{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;align-items:center;justify-content:center;padding:25px}
+.lock.open{display:flex}.lockbox{width:min(360px,100%);text-align:center}
+.lockbox img{width:72px;height:72px;border-radius:18px}.lockbox h2{margin:12px 0 5px}
+.pininput{text-align:center;font-size:23px;letter-spacing:8px}
+.light{--bg:#f4f4f1;--panel:#fff;--panel2:#f0f0ed;--text:#171717;--muted:#737373;--line:rgba(0,0,0,.10)}
+@media(min-width:700px){
+  main,.tabs,header{max-width:1000px;margin-left:auto;margin-right:auto}
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .fab{right:28px}
+  .bottomnav{left:50%;right:auto;transform:translateX(-50%);width:min(560px,100%);border-radius:18px 18px 0 0}
+}
+
+/* 🍳 Cooking / recipes */
+.recipeGrid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
+.recipeCard{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:13px;
+  cursor:pointer;position:relative
+}
+.recipeTop{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.recipeTitle{font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recipeActions{display:flex;gap:6px;flex:0 0 auto}
+.miniBtn{
+  width:34px;height:34px;border-radius:10px;background:var(--panel2);color:var(--text);
+  border:1px solid var(--line);display:grid;place-items:center;cursor:pointer
+}
+.ingredientPreview{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ingredientChip{
+  background:rgba(247,217,87,.12);border:1px solid rgba(247,217,87,.22);
+  color:var(--text);padding:5px 8px;border-radius:999px;font-size:11px
+}
+.recipeCount{color:var(--muted);font-size:11px;margin-top:8px}
+.recipeEmpty{padding:60px 15px;text-align:center;color:var(--muted)}
+.recipeEmpty .emoji{font-size:45px;margin-bottom:8px}
+.ingredientList{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.ingredientRow{
+  display:grid;grid-template-columns:minmax(0,1fr) 72px 76px 38px;
+  gap:6px;align-items:center
+}
+.ingredientRow input,.ingredientRow select{
+  min-width:0;width:100%;background:var(--panel2);color:var(--text);
+  border:1px solid var(--line);border-radius:10px;padding:9px;outline:none
+}
+.qtyInput{text-align:center;direction:ltr}
+.removeIng{
+  width:38px;height:38px;border-radius:10px;background:rgba(255,107,107,.12);
+  color:var(--danger);border:1px solid rgba(255,107,107,.18);cursor:pointer
+}
+.addIngredient{
+  width:100%;margin-top:9px;padding:10px;border-radius:11px;
+  background:var(--panel2);color:var(--text);border:1px dashed var(--line);cursor:pointer
+}
+.shopTitle{font-size:19px;font-weight:800;margin:0}
+.shopSubtitle{font-size:12px;color:var(--muted);margin-top:3px}
+.shopList{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.shopItem{
+  display:flex;align-items:center;gap:10px;padding:11px;border-radius:12px;
+  background:var(--panel2);border:1px solid var(--line)
+}
+.shopItem input{width:19px;height:19px;accent-color:var(--accent)}
+.shopItem.done .shopName{text-decoration:line-through;opacity:.45}
+.recipeSheet .primary{margin-top:13px}
+@media(max-width:380px){
+  .ingredientRow{grid-template-columns:minmax(0,1fr) 60px 68px 36px}
+  .ingredientRow input,.ingredientRow select{padding:8px;font-size:13px}
+}
+
+.reminderGrid{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.reminderCard{display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:var(--panel);border:1px solid var(--line)}
+.reminderCard input{width:20px;height:20px;accent-color:var(--accent)}
+.reminderText{flex:1;min-width:0}.reminderName{font-size:14px;font-weight:700}.reminderTime{font-size:11px;color:var(--muted);margin-top:3px}
+.reminderCard.done .reminderName{text-decoration:line-through;opacity:.45}
+.reminderDelete{width:34px;height:34px;border-radius:10px;background:rgba(255,107,107,.10);color:var(--danger);cursor:pointer}
+.reminderEmpty{text-align:center;color:var(--muted);padding:65px 15px}.reminderEmpty .emoji{font-size:43px;margin-bottom:7px}
+.reminderSheet textarea{min-height:90px}
+
+/* V9 dashboard, shopping, folders, themes */
+.dashboard{display:flex;flex-direction:column;gap:10px}
+.welcome{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:15px}
+.welcome h2{margin:0;font-size:20px}.welcome p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat b{font-size:22px}.stat span{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.quickGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.quick{padding:12px;border-radius:14px;background:var(--panel2);color:var(--text);border:1px solid var(--line);text-align:right}
+.quick b{display:block}.quick small{color:var(--muted)}
+.shoppingGrid,.folderGrid{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.folderCard,.shoppingListCard{padding:13px;border-radius:15px;background:var(--panel);border:1px solid var(--line)}
+.folderHead{display:flex;justify-content:space-between;align-items:center}
+.folderName{font-weight:800}.folderCount{font-size:11px;color:var(--muted)}
+.shoppingAdd{display:flex;gap:7px;margin-top:9px}.shoppingAdd input{flex:1}
+.shoppingAdd button{width:45px;border-radius:10px;background:var(--accent);color:#111;font-weight:900}
+.shoppingItem{display:flex;align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid var(--line)}
+.shoppingItem:last-child{border-bottom:0}.shoppingItem input{width:19px;height:19px;accent-color:var(--accent)}
+.shoppingItem.done span{text-decoration:line-through;opacity:.45}
+.themeRow{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.themeBtn{padding:9px 12px;border-radius:10px;background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+.themeBtn.active{background:var(--accent);color:#111;font-weight:800}
+.modalSmall{max-height:75svh}
+</style>
+</head>
+<body>
+<div id="lock" class="lock">
+  <div class="lockbox">
+    <img src="logo.png"><h2>znotes 🔒</h2><p style="color:var(--muted)">أدخل رمز القفل</p>
+    <input id="unlockPin" class="pininput field" type="password" inputmode="numeric" maxlength="6" placeholder="••••">
+    <button class="primary" id="unlockBtn">فتح</button>
+    <p id="lockError" style="color:var(--danger);display:none">الرمز غير صحيح 😭</p>
+  </div>
+</div>
+
+<div class="app">
+<header>
+  <div class="top">
+    <div class="brand"><img src="logo.png"><h1>znotes</h1></div>
+    <button class="iconbtn" id="viewBtn" aria-label="تبديل العرض"></button>
+  </div>
+  <div class="search"><span>⌕</span><input id="search" placeholder="ابحث في نوتاتك..."></div>
+</header>
+
+<div class="tabs" id="tabs">
+  <button class="active" data-filter="all">الكل</button><button data-filter="pinned">📌 مثبتة</button>
+  <button data-filter="favorite">⭐ المفضلة</button><button data-filter="tasks">☑️ المهام</button>
+  <button data-filter="recipes">🍳 طبخ</button><button data-filter="reminders">🔔 تذكيرات</button>
+</div>
+
+<main>
+  <div class="sectiontitle"><h2 id="sectionTitle">كل النوتات</h2><span id="count"></span></div>
+  <div id="content" class="grid"></div>
+</main>
+</div>
+
+<button class="fab" id="addBtn">＋</button>
+
+<nav class="bottomnav">
+  <button class="active" data-nav="home">⌂<span>الرئيسية</span></button>
+  <button data-nav="tasks">☑<span>المهام</span></button>
+  <button data-nav="favorite">★<span>المفضلة</span></button>
+  <button data-nav="settings">⚙<span>الإعدادات</span></button>
+</nav>
+
+<div class="overlay" id="editorOverlay">
+<div class="sheet">
+<div class="handle"></div>
+<div class="sheethead"><h2 id="editorTitle">نوتة جديدة</h2><div class="actions">
+<button class="iconbtn" id="closeEditor">✓</button><button class="iconbtn danger" id="deleteBtn">🗑</button>
+</div></div>
+<div class="field"><label>العنوان</label><input id="titleInput" placeholder="عنوان النوتة"></div>
+<div class="field"><label>المحتوى</label><textarea id="bodyInput" placeholder="اكتب هنا..."></textarea></div>
+<div class="row"><div class="field"><label>التصنيف</label><input id="tagInput" placeholder="مثال: مدرسة"></div>
+<div class="field"><label>التذكير</label><input id="reminderInput" type="datetime-local"></div></div>
+<div class="checkline"><input id="taskInput" type="checkbox"><label for="taskInput">هذه النوتة مهمة / قائمة مهام ☑️</label></div>
+<div class="checkline"><input id="favoriteInput" type="checkbox"><label for="favoriteInput">إضافة للمفضلة ⭐</label></div>
+<div class="field"><label>لون النوتة</label><div class="colors" id="colors"></div></div>
+<button class="primary" id="saveBtn">حفظ النوتة</button>
+</div></div>
+
+
+<div class="overlay" id="recipeOverlay">
+<div class="sheet recipeSheet">
+<div class="handle"></div>
+<div class="sheethead">
+  <h2 id="recipeEditorTitle">طبخة جديدة 🍳</h2>
+  <div class="actions">
+    <button class="iconbtn" id="closeRecipe">✓</button>
+    <button class="iconbtn danger" id="deleteRecipeBtn">🗑</button>
+  </div>
+</div>
+
+<div class="field">
+  <label>اسم الطبخة</label>
+  <input id="recipeNameInput" placeholder="مثال: معكرونة بالبشاميل">
+</div>
+
+<div class="field">
+  <label>المكونات</label>
+  <div id="ingredientList" class="ingredientList"></div>
+  <button class="addIngredient" id="addIngredientBtn">＋ إضافة مكوّن</button>
+</div>
+
+<button class="primary" id="saveRecipeBtn">حفظ الطبخة 🍳</button>
+</div></div>
+
+<div class="overlay" id="shoppingOverlay">
+<div class="sheet">
+<div class="handle"></div>
+<div class="sheethead">
+  <div>
+    <h2 class="shopTitle" id="shopTitle">أغراض الطبخة 🛒</h2>
+    <div class="shopSubtitle">الأشياء اللي لازم تجيبها من الماركت</div>
+  </div>
+  <button class="iconbtn" id="closeShopping">✓</button>
+</div>
+<div id="shoppingList" class="shopList"></div>
+</div></div>
+
+<div class="overlay" id="reminderOverlay">
+<div class="sheet reminderSheet"><div class="handle"></div>
+<div class="sheethead"><h2>تذكير جديد 🔔</h2><button class="iconbtn" id="closeReminder">✓</button></div>
+<div class="field"><label>شو بدك تتذكر؟</label><input id="reminderNameInput" placeholder="مثال: طفي الضواي 💡"></div>
+<div class="field"><label>ملاحظة (اختياري)</label><textarea id="reminderNoteInput" placeholder="مثال: قبل ما أطلع من البيت"></textarea></div>
+<div class="field"><label>وقت التذكير (اختياري)</label><input id="reminderTimeInput" type="datetime-local"></div>
+<button class="primary" id="saveReminderBtn">حفظ التذكير 🔔</button>
+</div></div>
+
+<div class="overlay" id="shoppingManagerOverlay">
+<div class="sheet modalSmall"><div class="handle"></div>
+<div class="sheethead"><h2>🛒 Shopping List</h2><button class="iconbtn" id="closeShoppingManager">✓</button></div>
+<div class="shoppingAdd"><input id="shoppingInput" placeholder="Add item..."><button id="shoppingAddBtn">＋</button></div>
+<div id="shoppingManagerList" class="shoppingGrid"></div>
+</div></div>
+
+<div class="overlay" id="folderOverlay">
+<div class="sheet modalSmall"><div class="handle"></div>
+<div class="sheethead"><h2>📁 Folders</h2><button class="iconbtn" id="closeFolder">✓</button></div>
+<div class="field"><label>Folder name</label><input id="folderNameInput" placeholder="School, Home, Ideas..."></div>
+<button class="primary" id="saveFolderBtn">Create folder 📁</button>
+<div id="folderList" class="folderGrid"></div>
+</div></div>
+
+<div class="overlay" id="todayOverlay">
+<div class="sheet modalSmall"><div class="handle"></div>
+<div id="todayDashboard"></div>
+<button class="primary" id="closeToday">Done ✓</button>
+</div></div>
+<div class="overlay" id="settingsOverlay">
+<div class="sheet">
+<div class="handle"></div><div class="sheethead"><h2>الإعدادات ⚙️</h2><button class="iconbtn" id="closeSettings">✓</button></div>
+<div class="field"><label>🎨 Theme</label><div class="themeRow" id="themeRow">
+<button class="themeBtn" data-theme="dark">🌑 Dark</button>
+<button class="themeBtn" data-theme="light">☀️ Light</button>
+</div></div>
+<div class="settingsList">
+<button class="settingbtn" id="shoppingSettingsBtn"><span>🛒 Shopping List</span><b>›</b></button>
+<button class="settingbtn" id="foldersSettingsBtn"><span>📁 Folders</span><b>›</b></button>
+<button class="settingbtn" id="languageBtn"><span>🌐 Language / اللغة</span><b id="languageValue">العربية</b></button>
+<button class="settingbtn" id="themeBtn"><span>🌓 المظهر</span><b id="themeText">داكن</b></button>
+<button class="settingbtn" id="fontBtn"><span>🔤 حجم الخط</span><b id="fontText">متوسط</b></button>
+<button class="settingbtn" id="lockBtn"><span>🔒 قفل التطبيق</span><b id="lockText">غير مفعل</b></button>
+<button class="settingbtn" id="exportBtn"><span>📤 تصدير النوتات</span><b>JSON</b></button>
+<button class="settingbtn" id="importBtn"><span>📥 استيراد النوتات</span><b>JSON</b></button>
+<input id="fileInput" type="file" accept="application/json" hidden>
+<button class="settingbtn danger" id="clearBtn"><span>🗑 حذف كل النوتات</span><b>⚠️</b></button>
+</div>
+<p style="color:var(--muted);font-size:12px;text-align:center;margin-top:20px">znotes • ملاحظاتك، بطريقتك ✨</p>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY="znotes-data-v2", SETTINGS="znotes-settings-v2", RECIPES="znotes-recipes-v1", REMINDERS="znotes-reminders-v1";
+const COLORS=[
+{id:"yellow",bg:"#4a3d12",ink:"#fff0a8",dot:"#F7D957"},{id:"blue",bg:"#123246",ink:"#b9e8ff",dot:"#51b9ee"},
+{id:"green",bg:"#183524",ink:"#c3f3d1",dot:"#58c982"},{id:"red",bg:"#401e24",ink:"#ffc7ce",dot:"#ef6674"},
+{id:"purple",bg:"#30203e",ink:"#e2caff",dot:"#a76ee8"},{id:"gray",bg:"#2b2d31",ink:"#ededed",dot:"#9da3ad"}
+];
+let notes=[], recipes=[], reminders=[], view="grid", filter="all", editing=null, editingRecipe=null, lang="ar", settings={theme:"dark",font:16,lock:null};
+
+const $=id=>document.getElementById(id);
+function load(){
+ try{notes=JSON.parse(localStorage.getItem(KEY)||"[]")}catch{notes=[]}
+ try{recipes=JSON.parse(localStorage.getItem(RECIPES)||"[]")}catch{recipes=[]}
+ try{reminders=JSON.parse(localStorage.getItem(REMINDERS)||"[]")}catch{reminders=[]}
+ try{settings={...settings,...JSON.parse(localStorage.getItem(SETTINGS)||"{}")}}catch{}
+ try{lang=localStorage.getItem("znotes-language")||"ar"}catch{}
+ applySettings();applyLanguage();
+}
+function persist(){localStorage.setItem(KEY,JSON.stringify(notes))}
+function persistRecipes(){localStorage.setItem(RECIPES,JSON.stringify(recipes))}
+function persistReminders(){localStorage.setItem(REMINDERS,JSON.stringify(reminders))}
+function saveSettings(){localStorage.setItem(SETTINGS,JSON.stringify(settings))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML}
+function color(id){return COLORS.find(x=>x.id===id)||COLORS[0]}
+function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800)}
+
+function filtered(){
+ const q=$("search").value.trim().toLowerCase();
+ return notes.filter(n=>{
+   const text=(n.title+" "+n.body+" "+(n.tag||"")).toLowerCase();
+   const okq=!q||text.includes(q);
+   const okf=filter==="all"||filter==="pinned"&&n.pinned||filter==="favorite"&&n.favorite||filter==="tasks"&&n.task;
+   return okq&&okf;
+ }).sort((a,b)=>(!!b.pinned-!!a.pinned)||(b.updatedAt-a.updatedAt));
+}
+function render(){
+ if(filter==="recipes"){renderRecipes();return}
+ if(filter==="reminders"){renderReminders();return}
+ const arr=filtered(), c=$("content");
+ c.className="grid"+(view==="list"?" list":"");
+ $("count").textContent=arr.length+" نوتة";
+ $("sectionTitle").textContent={all:tr("notes"),pinned:tr("pinned"),favorite:tr("favorite"),tasks:tr("tasks")}[filter];
+ c.innerHTML="";
+ if(!arr.length){c.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="emoji">📝</div>ما في شي هون... اكتب أول نوتة 😎</div>';return}
+ arr.forEach(n=>{
+   if(n.task){
+    const row=document.createElement("div");row.className="taskrow"+(n.done?" done":"");
+    row.innerHTML=`<input type="checkbox" ${n.done?"checked":""}><div class="tasktext" style="flex:1"><b>${esc(n.title||"مهمة")}</b><div style="color:var(--muted);font-size:12px;margin-top:3px">${esc(n.body)}</div></div><span>${n.favorite?"⭐":""}</span>`;
+    row.querySelector("input").onclick=e=>{e.stopPropagation();n.done=!n.done;n.updatedAt=Date.now();persist();render()};
+    row.onclick=()=>openEditor(n);c.appendChild(row);return;
+   }
+   const cc=color(n.color), card=document.createElement("div");card.className="card";card.style.background=cc.bg;card.style.color=cc.ink;
+   card.innerHTML=`${n.pinned?"<span class=pin>📌</span>":""}<h3>${n.favorite?"⭐ ":""}${esc(n.title||"بدون عنوان")}</h3><p>${esc(n.body||"فارغة...")}</p><div class=meta>${n.tag?`<span class=tag>#${esc(n.tag)}</span>`:""}${n.reminder?`<span>🔔 ${new Date(n.reminder).toLocaleString("ar")}</span>`:""}</div>`;
+   card.onclick=()=>openEditor(n);c.appendChild(card);
+ });
+}
+
+function renderReminders(){
+ const c=$("content");c.className="reminderGrid";
+ $("sectionTitle").textContent=tr("reminders");
+ $("count").textContent=reminders.filter(r=>!r.done).length+" باقي";
+ c.innerHTML="";
+ if(!reminders.length){c.innerHTML='<div class="reminderEmpty"><div class="emoji">🔔</div>'+tr("noReminders")+'<br><small>＋</small></div>';return}
+ reminders.slice().sort((a,b)=>(a.done-b.done)||((a.time||"").localeCompare(b.time||""))).forEach(r=>{
+   const card=document.createElement("div");card.className="reminderCard"+(r.done?" done":"");
+   const time=r.time?new Date(r.time).toLocaleString("ar-TR",{dateStyle:"medium",timeStyle:"short"}):"بدون وقت محدد";
+   card.innerHTML=`<input type="checkbox" ${r.done?"checked":""}><div class="reminderText"><div class="reminderName">${esc(r.name)}</div>${r.note?`<div class="reminderTime">${esc(r.note)}</div>`:""}<div class="reminderTime">⏰ ${esc(time)}</div></div><button class="reminderDelete">🗑️</button>`;
+   card.querySelector("input").onchange=e=>{r.done=e.target.checked;persistReminders();renderReminders()};
+   card.querySelector(".reminderDelete").onclick=()=>{reminders=reminders.filter(x=>x.id!==r.id);persistReminders();renderReminders();toast("انحذف التذكير 🗑️")};
+   c.appendChild(card);
+ });
+}
+
+function renderRecipes(){
+ const c=$("content"); c.className="recipeGrid";
+ $("sectionTitle").textContent=tr("recipes");
+ $("count").textContent=recipes.length+" طبخة";
+ c.innerHTML="";
+ if(!recipes.length){
+   c.innerHTML='<div class="recipeEmpty"><div class="emoji">🍳</div>ما عندك طبخات لسا 😎<br><small>اضغط ＋ وأضف أول طبخة!</small></div>';
+   return;
+ }
+ recipes.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).forEach(r=>{
+   const card=document.createElement("div");card.className="recipeCard";
+   const preview=(r.ingredients||[]).filter(x=>x.name.trim()).slice(0,4);
+   card.innerHTML=`
+     <div class="recipeTop">
+       <div class="recipeTitle">🍳 ${esc(r.name||"طبخة بدون اسم")}</div>
+       <div class="recipeActions">
+         <button class="miniBtn viewRecipe" title="أغراض الماركت">👁️</button>
+         <button class="miniBtn editRecipe" title="تعديل">✏️</button>
+       </div>
+     </div>
+     <div class="ingredientPreview">
+       ${preview.map(x=>`<span class="ingredientChip">${esc(x.name)} • ${esc(x.qty)} ${esc(x.unit)}</span>`).join("")}
+     </div>
+     <div class="recipeCount">${(r.ingredients||[]).filter(x=>x.name.trim()).length} مكوّن • اضغط 👁️ لتشوف أغراض الماركت 🛒</div>
+   `;
+   card.querySelector(".viewRecipe").onclick=e=>{e.stopPropagation();openShopping(r)};
+   card.querySelector(".editRecipe").onclick=e=>{e.stopPropagation();openRecipeEditor(r)};
+   card.onclick=()=>openShopping(r);
+   c.appendChild(card);
+ });
+}
+
+function openEditor(n){
+ editing=n?{...n}:{id:uid(),title:"",body:"",tag:"",color:"yellow",pinned:false,favorite:false,task:false,done:false,reminder:"",updatedAt:Date.now(),isNew:true};
+ $("editorTitle").textContent=editing.isNew?"نوتة جديدة":"تعديل النوتة";
+ $("titleInput").value=editing.title;$("bodyInput").value=editing.body;$("tagInput").value=editing.tag||"";
+ $("reminderInput").value=editing.reminder||"";$("taskInput").checked=!!editing.task;$("favoriteInput").checked=!!editing.favorite;
+ $("deleteBtn").style.display=editing.isNew?"none":"grid"; buildColors();$("editorOverlay").classList.add("open");
+}
+function closeEditor(){$("editorOverlay").classList.remove("open");editing=null}
+function buildColors(){
+ $("colors").innerHTML="";COLORS.forEach(c=>{let b=document.createElement("button");b.className="color"+(editing.color===c.id?" sel":"");b.style.background=c.dot;b.onclick=()=>{editing.color=c.id;buildColors()};$("colors").appendChild(b)})
+}
+
+$("shoppingSettingsBtn").onclick=openShoppingManager;
+$("foldersSettingsBtn").onclick=openFolders;
+document.querySelectorAll(".themeBtn").forEach(b=>b.onclick=()=>{
+ settings.theme=b.dataset.theme;localStorage.setItem(SETTINGS,JSON.stringify(settings));applySettings();
+ document.querySelectorAll(".themeBtn").forEach(x=>x.classList.toggle("active",x.dataset.theme===settings.theme));
+});
+document.querySelectorAll(".themeBtn").forEach(x=>x.classList.toggle("active",x.dataset.theme===settings.theme));
+$("languageBtn").onclick=()=>{
+ lang=lang==="ar"?"en":"ar";
+ localStorage.setItem("znotes-language",lang);
+ applyLanguage();render();
+ toast(lang==="en"?"English enabled 🇬🇧":"تم تفعيل العربية 🇸🇦");
+};
+
+let shoppingItems=[];
+let folders=[];
+try{shoppingItems=JSON.parse(localStorage.getItem("znotes-shopping-v1")||"[]")}catch{}
+try{folders=JSON.parse(localStorage.getItem("znotes-folders-v1")||"[]")}catch{}
+function saveShopping(){localStorage.setItem("znotes-shopping-v1",JSON.stringify(shoppingItems))}
+function saveFolders(){localStorage.setItem("znotes-folders-v1",JSON.stringify(folders))}
+function openShoppingManager(){renderShoppingManager();$("shoppingManagerOverlay").classList.add("open")}
+function renderShoppingManager(){
+ const c=$("shoppingManagerList");c.innerHTML="";
+ if(!shoppingItems.length){c.innerHTML='<div class="reminderEmpty">🛒<br>No shopping items yet.</div>';return}
+ shoppingItems.forEach((x,i)=>{
+  const row=document.createElement("label");row.className="shoppingItem"+(x.done?" done":"");
+  row.innerHTML=`<input type="checkbox" ${x.done?"checked":""}><span style="flex:1">${esc(x.name)}</span><button class="reminderDelete" type="button">🗑️</button>`;
+  row.querySelector("input").onchange=e=>{x.done=e.target.checked;saveShopping();renderShoppingManager()};
+  row.querySelector("button").onclick=e=>{e.preventDefault();shoppingItems.splice(i,1);saveShopping();renderShoppingManager()};
+  c.appendChild(row);
+ });
+}
+$("shoppingAddBtn").onclick=()=>{
+ const v=$("shoppingInput").value.trim();if(!v)return;
+ shoppingItems.push({id:uid(),name:v,done:false});$("shoppingInput").value="";saveShopping();renderShoppingManager();
+};
+$("closeShoppingManager").onclick=()=>$("shoppingManagerOverlay").classList.remove("open");
+
+function openFolders(){renderFolders();$("folderOverlay").classList.add("open")}
+function renderFolders(){
+ const c=$("folderList");c.innerHTML="";
+ folders.forEach((f,i)=>{
+  const d=document.createElement("div");d.className="folderCard";
+  d.innerHTML=`<div class="folderHead"><span class="folderName">📁 ${esc(f.name)}</span><button class="miniBtn">🗑️</button></div><div class="folderCount">${notes.filter(n=>n.folderId===f.id).length} notes</div>`;
+  d.querySelector("button").onclick=()=>{folders.splice(i,1);notes.forEach(n=>{if(n.folderId===f.id)n.folderId=null});saveFolders();persist();renderFolders()};
+  c.appendChild(d);
+ });
+}
+$("saveFolderBtn").onclick=()=>{
+ const n=$("folderNameInput").value.trim();if(!n){toast("Enter a folder name 😭");return}
+ folders.push({id:uid(),name:n});$("folderNameInput").value="";saveFolders();renderFolders();toast("Folder created 📁");
+};
+$("closeFolder").onclick=()=>$("folderOverlay").classList.remove("open");
+
+function renderToday(){
+ const activeRem=reminders.filter(r=>!r.done).length;
+ const tasks=notes.filter(n=>n.task&&!n.done).length;
+ const recipesCount=recipes.length;
+ const shop=shoppingItems.filter(x=>!x.done).length;
+ $("todayDashboard").innerHTML=`<div class="dashboard">
+ <div class="welcome"><h2>Good day 👋</h2><p>${new Date().toLocaleDateString(lang==="ar"?"ar-TR":"en-US",{weekday:"long",month:"long",day:"numeric"})}</p></div>
+ <div class="statgrid">
+  <div class="stat"><b>🔔 ${activeRem}</b><span>${lang==="ar"?"تذكيرات":"Reminders"}</span></div>
+  <div class="stat"><b>☑️ ${tasks}</b><span>${lang==="ar"?"مهام":"Tasks"}</span></div>
+  <div class="stat"><b>🛒 ${shop}</b><span>${lang==="ar"?"مشتريات":"Shopping"}</span></div>
+  <div class="stat"><b>🍳 ${recipesCount}</b><span>${lang==="ar"?"طبخات":"Recipes"}</span></div>
+ </div>
+ <div class="quickGrid">
+  <button class="quick" id="todayReminder">🔔 <b>${lang==="ar"?"التذكيرات":"Reminders"}</b><small>${activeRem} open</small></button>
+  <button class="quick" id="todayShop">🛒 <b>${lang==="ar"?"المشتريات":"Shopping"}</b><small>${shop} items</small></button>
+  <button class="quick" id="todayFolders">📁 <b>${lang==="ar"?"المجلدات":"Folders"}</b><small>${folders.length}</small></button>
+  <button class="quick" id="todayNotes">📝 <b>${lang==="ar"?"النوتات":"Notes"}</b><small>${notes.length}</small></button>
+ </div></div>`;
+ $("todayReminder").onclick=()=>{$("todayOverlay").classList.remove("open");filter="reminders";document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x.dataset.filter==="reminders"));render()};
+ $("todayShop").onclick=()=>{$("todayOverlay").classList.remove("open");openShoppingManager()};
+ $("todayFolders").onclick=()=>{$("todayOverlay").classList.remove("open");openFolders()};
+ $("todayNotes").onclick=()=>{$("todayOverlay").classList.remove("open");filter="all";document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x.dataset.filter==="all"));render()};
+}
+$("closeToday").onclick=()=>$("todayOverlay").classList.remove("open");
+let editingReminder=null;
+function openReminderEditor(){
+ editingReminder={id:uid(),name:"",note:"",time:"",done:false};
+ $("reminderNameInput").value="";$("reminderNoteInput").value="";$("reminderTimeInput").value="";
+ $("reminderOverlay").classList.add("open");setTimeout(()=>$("reminderNameInput").focus(),80);
+}
+$("saveReminderBtn").onclick=()=>{
+ const name=$("reminderNameInput").value.trim();
+ if(!name){toast("اكتب شو بدك تتذكر أول 😭");return}
+ editingReminder.name=name;editingReminder.note=$("reminderNoteInput").value.trim();
+ editingReminder.time=$("reminderTimeInput").value;editingReminder.updatedAt=Date.now();
+ reminders.unshift(editingReminder);persistReminders();
+ $("reminderOverlay").classList.remove("open");editingReminder=null;render();toast("انحفظ التذكير 🔔✨");
+};
+$("closeReminder").onclick=()=>{$("reminderOverlay").classList.remove("open");editingReminder=null};
+$("reminderOverlay").onclick=e=>{if(e.target.id==="reminderOverlay"){$("reminderOverlay").classList.remove("open");editingReminder=null}};
+
+function newIngredient(){return {id:uid(),name:"",qty:"1",unit:"عدد"}}
+
+function openRecipeEditor(r){
+ editingRecipe=r?JSON.parse(JSON.stringify(r)):{
+   id:uid(),name:"",ingredients:[newIngredient()],updatedAt:Date.now(),isNew:true
+ };
+ $("recipeEditorTitle").textContent=editingRecipe.isNew?"طبخة جديدة 🍳":"تعديل الطبخة";
+ $("recipeNameInput").value=editingRecipe.name||"";
+ $("deleteRecipeBtn").style.display=editingRecipe.isNew?"none":"grid";
+ renderIngredientInputs();
+ $("recipeOverlay").classList.add("open");
+}
+
+function renderIngredientInputs(){
+ const list=$("ingredientList"); list.innerHTML="";
+ (editingRecipe.ingredients||[]).forEach((ing,i)=>{
+   const row=document.createElement("div");row.className="ingredientRow";
+   row.innerHTML=`
+     <input class="ingName" placeholder="المكوّن" value="${esc(ing.name||"")}">
+     <input class="qtyInput ingQty" inputmode="decimal" placeholder="1" value="${esc(ing.qty||"")}">
+     <select class="ingUnit">
+       <option>kg</option><option>lt</option><option>عدد</option>
+     </select>
+     <button class="removeIng" title="حذف">×</button>
+   `;
+   row.querySelector(".ingUnit").value=ing.unit||"عدد";
+   row.querySelector(".ingName").oninput=e=>editingRecipe.ingredients[i].name=e.target.value;
+   row.querySelector(".ingQty").oninput=e=>editingRecipe.ingredients[i].qty=e.target.value;
+   row.querySelector(".ingUnit").onchange=e=>editingRecipe.ingredients[i].unit=e.target.value;
+   row.querySelector(".removeIng").onclick=()=>{
+     editingRecipe.ingredients.splice(i,1);
+     if(!editingRecipe.ingredients.length)editingRecipe.ingredients.push(newIngredient());
+     renderIngredientInputs();
+   };
+   list.appendChild(row);
+ });
+}
+
+$("addIngredientBtn").onclick=()=>{
+ editingRecipe.ingredients.push(newIngredient());
+ renderIngredientInputs();
+ const inputs=$("ingredientList").querySelectorAll(".ingName"); if(inputs.length)inputs[inputs.length-1].focus();
+};
+
+$("saveRecipeBtn").onclick=()=>{
+ const name=$("recipeNameInput").value.trim();
+ const ingredients=(editingRecipe.ingredients||[])
+   .map(x=>({id:x.id||uid(),name:String(x.name||"").trim(),qty:String(x.qty||"").trim(),unit:x.unit||"عدد"}))
+   .filter(x=>x.name);
+ if(!name){toast("اكتب اسم الطبخة أول 😭");$("recipeNameInput").focus();return}
+ if(!ingredients.length){toast("ضيف مكوّن واحد على الأقل 🥔");return}
+ editingRecipe.name=name;editingRecipe.ingredients=ingredients;editingRecipe.updatedAt=Date.now();
+ const i=recipes.findIndex(x=>x.id===editingRecipe.id);
+ if(i>=0)recipes[i]=editingRecipe;else recipes.unshift(editingRecipe);
+ persistRecipes();$("recipeOverlay").classList.remove("open");editingRecipe=null;render();toast("انحفظت الطبخة 🍳✨");
+};
+
+$("closeRecipe").onclick=()=>{
+ $("recipeOverlay").classList.remove("open");editingRecipe=null;
+};
+$("recipeOverlay").onclick=e=>{if(e.target.id==="recipeOverlay"){$("recipeOverlay").classList.remove("open");editingRecipe=null}};
+
+$("deleteRecipeBtn").onclick=()=>{
+ if(!editingRecipe)return;
+ if(confirm("متأكد بدك تحذف الطبخة؟")){
+   recipes=recipes.filter(x=>x.id!==editingRecipe.id);
+   persistRecipes();$("recipeOverlay").classList.remove("open");editingRecipe=null;render();toast("انحذفت الطبخة 🗑️");
+ }
+};
+
+function openShopping(r){
+ $("shopTitle").textContent=(r.name||"الطبخة")+" 🛒";
+ const list=$("shoppingList");list.innerHTML="";
+ (r.ingredients||[]).filter(x=>x.name.trim()).forEach((ing,i)=>{
+   const row=document.createElement("label");row.className="shopItem";
+   row.innerHTML=`<input type="checkbox"><span class="shopName" style="flex:1">${esc(ing.name)}</span><b>${esc(ing.qty)} ${esc(ing.unit)}</b>`;
+   const cb=row.querySelector("input");
+   cb.onchange=()=>row.classList.toggle("done",cb.checked);
+   list.appendChild(row);
+ });
+ $("shoppingOverlay").classList.add("open");
+}
+$("closeShopping").onclick=()=>$("shoppingOverlay").classList.remove("open");
+$("shoppingOverlay").onclick=e=>{if(e.target.id==="shoppingOverlay")$("shoppingOverlay").classList.remove("open")};
+
+$("saveBtn").onclick=()=>{
+ const title=$("titleInput").value.trim(),body=$("bodyInput").value.trim();
+ if(!title&&!body){closeEditor();return}
+ Object.assign(editing,{title,body,tag:$("tagInput").value.trim(),reminder:$("reminderInput").value,task:$("taskInput").checked,favorite:$("favoriteInput").checked,updatedAt:Date.now()});
+ const i=notes.findIndex(n=>n.id===editing.id);if(i>=0)notes[i]=editing;else notes.unshift(editing);
+ persist();closeEditor();render();toast("تم حفظ النوتة ✨");
+};
+$("deleteBtn").onclick=()=>{if(confirm("متأكد بدك تحذف النوتة؟")){notes=notes.filter(n=>n.id!==editing.id);persist();closeEditor();render();toast("انحذفت 🗑️")}}
+$("closeEditor").onclick=closeEditor;
+$("editorOverlay").onclick=e=>{if(e.target.id==="editorOverlay")closeEditor()}
+$("addBtn").onclick=()=>{
+ if(filter==="recipes")openRecipeEditor(null);
+ else if(filter==="reminders")openReminderEditor();
+ else openEditor(null);
+};
+$("search").oninput=render;
+$("viewBtn").onclick=()=>{view=view==="grid"?"list":"grid";$("viewBtn").textContent=view==="grid"?"☷":"▦";render()};
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
+ filter=b.dataset.filter;
+ document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("active"));
+ b.classList.add("active");
+ render();
+});
+document.querySelectorAll(".bottomnav button").forEach(b=>b.onclick=()=>{
+ const n=b.dataset.nav;if(n==="settings"){$("settingsOverlay").classList.add("open");return}
+ filter=n==="home"?"all":n;document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x.dataset.filter===filter));render();
+});
+
+$("closeSettings").onclick=()=>$("settingsOverlay").classList.remove("open");
+$("settingsOverlay").onclick=e=>{if(e.target.id==="settingsOverlay")$("settingsOverlay").classList.remove("open")}
+$("themeBtn").onclick=()=>{settings.theme=settings.theme==="dark"?"light":"dark";saveSettings();applySettings()}
+$("fontBtn").onclick=()=>{settings.font=settings.font===16?18:settings.font===18?14:16;saveSettings();applySettings()}
+
+const T={
+ ar:{brand:"znotes",search:"ابحث...",all:"الكل",pinned:"📌 مثبتة",favorite:"⭐ المفضلة",tasks:"☑️ المهام",recipes:"🍳 طبخ",reminders:"🔔 تذكيرات",add:"＋",settings:"الإعدادات",notes:"كل النوتات",empty:"ما في شي هون... اكتب أول نوتة 😎",language:"العربية",newReminder:"تذكير جديد 🔔",what:"شو بدك تتذكر؟",note:"ملاحظة (اختياري)",time:"وقت التذكير (اختياري)",save:"حفظ التذكير 🔔",noReminders:"ما في تذكيرات لسا 😎"},
+ en:{brand:"znotes",search:"Search...",all:"All",pinned:"📌 Pinned",favorite:"⭐ Favorites",tasks:"☑️ Tasks",recipes:"🍳 Cooking",reminders:"🔔 Reminders",add:"＋",settings:"Settings",notes:"All Notes",empty:"Nothing here... write your first note 😎",language:"English",newReminder:"New Reminder 🔔",what:"What do you want to remember?",note:"Note (optional)",time:"Reminder time (optional)",save:"Save reminder 🔔",noReminders:"No reminders yet 😎"}
+};
+function tr(k){return (T[lang]||T.ar)[k]||k}
+function applyLanguage(){
+ document.documentElement.lang=lang;
+ document.documentElement.dir=lang==="ar"?"rtl":"ltr";
+ const q=id=>$(id);
+ if(q("searchInput"))q("searchInput").placeholder=tr("search");
+ if(q("languageValue"))q("languageValue").textContent=tr("language");
+ const tabMap={all:"all",pinned:"pinned",favorite:"favorite",tasks:"tasks",recipes:"recipes",reminders:"reminders"};
+ document.querySelectorAll("[data-bottom=\"today\"]").forEach(b=>b.onclick=()=>{$("todayOverlay").classList.add("open");renderToday()});
+document.querySelectorAll("#tabs button").forEach(b=>{if(tabMap[b.dataset.filter])b.textContent=tr(tabMap[b.dataset.filter])});
+ if(q("addBtn"))q("addBtn").textContent=tr("add");
+ if(q("reminderEditorTitle"))q("reminderEditorTitle").textContent=tr("newReminder");
+ if(q("reminderNameInput"))q("reminderNameInput").previousElementSibling.textContent=tr("what");
+ if(q("reminderNoteInput"))q("reminderNoteInput").previousElementSibling.textContent=tr("note");
+ if(q("reminderTimeInput"))q("reminderTimeInput").previousElementSibling.textContent=tr("time");
+ if(q("saveReminderBtn"))q("saveReminderBtn").textContent=tr("save");
+}
+function applySettings(){
+ document.body.classList.toggle("light",settings.theme==="light");document.documentElement.style.setProperty("--font",settings.font+"px");
+ $("themeText").textContent=settings.theme==="dark"?"داكن":"فاتح";$("fontText").textContent=settings.font===16?"متوسط":settings.font===18?"كبير":"صغير";$("lockText").textContent=settings.lock?"مفعل":"غير مفعل";
+}
+$("exportBtn").onclick=()=>{
+ const backup={notes,recipes,reminders};
+ const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="znotes-backup.json";a.click();URL.revokeObjectURL(a.href);toast("تم تصدير النسخة الاحتياطية 📤")
+};
+$("importBtn").onclick=()=>$("fileInput").click();
+$("fileInput").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);
+ if(Array.isArray(x)){notes=x}
+ else if(x&&Array.isArray(x.notes)){notes=x.notes;recipes=Array.isArray(x.recipes)?x.recipes:recipes;reminders=Array.isArray(x.reminders)?x.reminders:reminders}
+ else throw 0;
+ persist();persistRecipes();persistReminders();render();toast("تم الاستيراد 📥")}catch{toast("الملف غير صالح 😭")}};r.readAsText(f)}
+$("clearBtn").onclick=()=>{if(confirm("رح تنحذف كل النوتات. متأكد؟")){notes=[];recipes=[];reminders=[];persist();persistRecipes();persistReminders();render();toast("تم حذف الكل 🗑️")}}
+
+$("lockBtn").onclick=()=>{
+ if(settings.lock){settings.lock=null;saveSettings();applySettings();toast("تم إلغاء القفل 🔓");return}
+ const p=prompt("اختار PIN من 4 إلى 6 أرقام:");
+ if(p&&/^\d{4,6}$/.test(p)){settings.lock=p;saveSettings();applySettings();toast("تم تفعيل القفل 🔒")}else if(p)toast("PIN لازم يكون 4-6 أرقام")
+};
+$("unlockBtn").onclick=unlock;
+$("unlockPin").onkeydown=e=>{if(e.key==="Enter")unlock()};
+function unlock(){
+ if($("unlockPin").value===settings.lock){$("lock").classList.remove("open");$("unlockPin").value="";$("lockError").style.display="none"}
+ else $("lockError").style.display="block";
+}
+load();
+$("viewBtn").textContent="☷";render();
+if(settings.lock)$("lock").classList.add("open");
+
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js"));
+</script>
+</body></html>

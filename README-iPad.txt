@@ -1,0 +1,1 @@
+Open dashboard.html on iPad. Use Open → edit → Preview → Export. Works locally/offline.
